@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPERADMIN
+}
+
+enum LoanStatus {
+  APPROVED
+  RETURNED
+}
+
+model Superadmin {
+  id        String   @id @default(uuid())
+  username  String   @unique @db.VarChar(30)
+  full_name String   @db.VarChar(100)
+  password  String   @db.VarChar(60)
+  token     String?  @db.VarChar(1000)
+  role      Role     @default(SUPERADMIN)
+  createdAt DateTime @default(now()) @db.Timestamp(3)
+  updatedAt DateTime @updatedAt @db.Timestamp(3)
+
+  @@map("superadmin")
+}
+
+model Student {
+  id        String   @id @default(uuid())
+  full_name String   @db.VarChar(100)
+  nim       String   @unique @db.VarChar(20)
+  createdAt DateTime @default(now()) @db.Timestamp(3)
+  updatedAt DateTime @updatedAt @db.Timestamp(3)
+  Loan      Loan[]
+
+  @@index([full_name])
+  @@map("students")
+}
+
+model Book {
+  id        String   @id @default(uuid())
+  title     String   @unique @db.VarChar(255)
+  stock     Int      @default(0)
+  createdAt DateTime @default(now()) @db.Timestamp(3)
+  updatedAt DateTime @updatedAt @db.Timestamp(3)
+  Loan      Loan[]
+
+  @@map("books")
+}
+
+model Loan {
+  id        String     @id @default(uuid())
+  student   Student    @relation(fields: [studentId], references: [id])
+  studentId String
+  book      Book       @relation(fields: [bookId], references: [id])
+  bookId    String
+  status    LoanStatus @default(APPROVED)
+  createdAt DateTime   @default(now()) @db.Timestamp(3)
+  updatedAt DateTime   @updatedAt @db.Timestamp(3)
+
+  @@index([status])
+  @@index([studentId])
+  @@index([bookId])
+  @@map("loans")
+}
