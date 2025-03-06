@@ -1,14 +1,13 @@
-import { Global, Module } from '@nestjs/common';
-// import { Global, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { Global, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import * as chalk from 'chalk';
 import { PrismaService } from './prisma.service';
-// import { ValidationService } from './validation.service';
-// import { ErrorFilter } from './error.filter';
-// import { APP_FILTER } from '@nestjs/core';
-// import { AuthMiddleware } from './auth.middleware';
+import { ValidationService } from './validation.service';
+import { ErrorFilter } from './error.filter';
+import { APP_FILTER } from '@nestjs/core';
+import { AuthMiddleware } from './auth.middleware';
 
 // Define interfaces
 interface QueryMessage {
@@ -100,18 +99,16 @@ ${divider}\n`;
   ],
   providers: [
     PrismaService,
-    // ValidationService,
-    // {
-    //     provide: APP_FILTER,
-    //     useClass: ErrorFilter,
-    // },
+    ValidationService,
+    {
+      provide: APP_FILTER,
+      useClass: ErrorFilter,
+    },
   ],
-  exports: [PrismaService],
-  //   exports: [PrismaService, ValidationService],
+  exports: [PrismaService, ValidationService],
 })
-export class CommonModule {}
-// export class CommonModule implements NestModule {
-//   configure(consumer: MiddlewareConsumer) {
-//     consumer.apply(AuthMiddleware).forRoutes('/api/*');
-//   }
-// }
+export class CommonModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(AuthMiddleware).forRoutes('/api/*');
+  }
+}
