@@ -1,6 +1,6 @@
 import { HttpException, Inject, Injectable, Logger } from '@nestjs/common';
 import {
-  RegisterSuperadminRequest,
+  LoginSuperadminRequest,
   SuperadminResponse,
 } from '../model/superadmin.model';
 import { ValidationService } from '../common/validation.service';
@@ -8,6 +8,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PrismaService } from '../common/prisma.service';
 import { SuperadminValidation } from './superadmin.validation';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class SuperadminService {
@@ -16,78 +17,46 @@ export class SuperadminService {
     @Inject(WINSTON_MODULE_PROVIDER)
     private logger: Logger,
     private prismaService: PrismaService,
+    private jwtService: JwtService,
   ) {}
 
-  async register(
-    request: RegisterSuperadminRequest,
-  ): Promise<SuperadminResponse> {
-    const registerRequest = this.validationService.validate(
-      SuperadminValidation.REGISTER,
+  async login(request: LoginSuperadminRequest): Promise<SuperadminResponse> {
+    const loginRequest = this.validationService.validate(
+      SuperadminValidation.LOGIN,
       request,
-    ) as RegisterSuperadminRequest;
+    ) as LoginSuperadminRequest;
 
-    const totalUserWithSameUsername = await this.prismaService.superadmin.count(
-      {
-        where: {
-          username: registerRequest.username,
-        },
-      },
-    );
+    const superadmin = await this.prismaService.superadmin.findUnique({
+      where: { username: loginRequest.username },
+    });
 
-    if (totalUserWithSameUsername != 0) {
-      throw new HttpException('Username already exists', 400);
+    if (!superadmin) {
+      throw new HttpException('Username or password is wrong', 401);
     }
 
-    registerRequest.password = await bcrypt.hash(registerRequest.password, 10);
+    const isValid = await bcrypt.compare(
+      loginRequest.password,
+      superadmin.password,
+    );
 
-    const superadmin = await this.prismaService.superadmin.create({
-      data: registerRequest,
-    });
+    if (!isValid) {
+      throw new HttpException('Username or password is wrong', 401);
+    }
+
+    const payload = { sub: superadmin.id, username: superadmin.username };
+    const token = this.jwtService.sign(payload); // Otomatis pakai private key dari config
 
     return {
       username: superadmin.username,
       full_name: superadmin.full_name,
+      token,
     };
   }
 
-  async login(request: LoginUserRequest): Promise<UserResponse> {
-    this.logger.debug(`UserService.login(${JSON.stringify(request)})`);
-    const loginRequest = this.validationService.validate(
-      UserValidation.LOGIN,
-      request,
-    );
-
-    let user = await this.prismaService.user.findUnique({
-      where: {
-        username: loginRequest.username,
-      },
-    });
-
-    if (!user) {
-      throw new HttpException('Username or password is invalid', 401);
-    }
-
-    const isPasswordValid = await bcrypt.compare(
-      loginRequest.password,
-      user.password,
-    );
-
-    if (!isPasswordValid) {
-      throw new HttpException('Username or password is invalid', 401);
-    }
-
-    user = await this.prismaService.user.update({
-      where: {
-        username: loginRequest.username,
-      },
-      data: {
-        token: uuid(),
-      },
-    });
-    return {
-      username: user.username,
-      name: user.name,
-      token: user.token ?? undefined,
-    };
-  }
+  // // Tambahkan method logout:
+  // async logout(): Promise<boolean> {
+  //   // Adding await to resolve the async method warning
+  //   await Promise.resolve(true);
+  //   return true;
+  // }
 }

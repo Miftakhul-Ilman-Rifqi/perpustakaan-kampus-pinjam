@@ -6,19 +6,19 @@ import {
 } from '@nestjs/common';
 import { Superadmin } from '@prisma/client';
 
-interface RequestWithUser extends Request {
-  user?: Superadmin;
+interface RequestWithSuperadmin extends Request {
+  superadmin?: Superadmin;
 }
 
 export const Auth = createParamDecorator(
   (data: unknown, context: ExecutionContext): Superadmin => {
-    const request = context.switchToHttp().getRequest<RequestWithUser>();
-    const user = request.user;
+    const request = context.switchToHttp().getRequest<RequestWithSuperadmin>();
+    const superadmin = request.superadmin;
 
-    if (!user) {
+    if (!superadmin) {
       throw new HttpException('Unauthorized', 401);
     }
 
-    return user;
+    return superadmin;
   },
 );

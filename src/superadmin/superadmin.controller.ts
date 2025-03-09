@@ -1,33 +1,40 @@
-import { Body, Controller, HttpCode, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  HttpCode,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { SuperadminService } from './superadmin.service';
 import {
-  RegisterSuperadminRequest,
+  LoginSuperadminRequest,
   SuperadminResponse,
 } from '../model/superadmin.model';
 import { WebResponse } from '../model/web.model';
 import { Auth } from '../common/auth.decorator';
+import { Superadmin } from '@prisma/client';
+import { CaslGuard } from '../common/casl.guard';
 
 @Controller(`/api/superadmin`)
 export class SuperadminController {
   constructor(private superadminService: SuperadminService) {}
 
-  @Post()
+  @Post('/login')
   @HttpCode(200)
-  async register(
-    @Body() request: RegisterSuperadminRequest,
+  async login(
+    @Body() request: LoginSuperadminRequest,
   ): Promise<WebResponse<SuperadminResponse>> {
-    const result = await this.superadminService.register(request);
-    return {
-      data: result,
-    };
+    const result = await this.superadminService.login(request);
+    return { data: result };
   }
 
-  @Get('/current')
+  @Delete('/current')
+  @UseGuards(CaslGuard)
   @HttpCode(200)
-  async get(@Auth() superadmin: Superadmin): Promise<WebResponse<UserResponse>> {
-    const result = await this.userService.get(user);
-    return {
-      data: result,
-    };
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async logout(@Auth() _superadmin: Superadmin): Promise<WebResponse<boolean>> {
+    await Promise.resolve(true);
+    return { data: true };
   }
 }

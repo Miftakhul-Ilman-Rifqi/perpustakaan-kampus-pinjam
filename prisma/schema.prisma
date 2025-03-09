@@ -27,7 +27,6 @@ model Superadmin {
   username  String   @unique @db.VarChar(30)
   full_name String   @db.VarChar(100)
   password  String   @db.VarChar(60)
-  token     String?  @db.VarChar(1000)
   role      Role     @default(SUPERADMIN)
   createdAt DateTime @default(now()) @db.Timestamp(3)
   updatedAt DateTime @updatedAt @db.Timestamp(3)

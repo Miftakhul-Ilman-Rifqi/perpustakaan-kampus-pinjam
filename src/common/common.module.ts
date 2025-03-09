@@ -1,4 +1,10 @@
-import { Global, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import {
+  Global,
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
@@ -8,6 +14,8 @@ import { ValidationService } from './validation.service';
 import { ErrorFilter } from './error.filter';
 import { APP_FILTER } from '@nestjs/core';
 import { AuthMiddleware } from './auth.middleware';
+import { JwtModule } from '@nestjs/jwt';
+import { CaslAbilityFactory } from './casl-ability.factory';
 
 // Define interfaces
 interface QueryMessage {
@@ -48,6 +56,15 @@ function isDataMessage(value: unknown): value is DataMessage {
 @Global()
 @Module({
   imports: [
+    JwtModule.register({
+      global: true,
+      privateKey: process.env.JWT_PRIVATE_KEY,
+      publicKey: process.env.JWT_PUBLIC_KEY,
+      signOptions: {
+        algorithm: 'RS256',
+        expiresIn: '1d',
+      },
+    }),
     WinstonModule.forRoot({
       level: 'debug',
       format: winston.format.combine(
@@ -100,15 +117,19 @@ ${divider}\n`;
   providers: [
     PrismaService,
     ValidationService,
+    CaslAbilityFactory,
     {
       provide: APP_FILTER,
       useClass: ErrorFilter,
     },
   ],
-  exports: [PrismaService, ValidationService],
+  exports: [PrismaService, ValidationService, CaslAbilityFactory],
 })
 export class CommonModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AuthMiddleware).forRoutes('/api/*');
+    consumer
+      .apply(AuthMiddleware)
+      .exclude({ path: 'api/superadmin/login', method: RequestMethod.POST })
+      .forRoutes('/api/*');
   }
 }

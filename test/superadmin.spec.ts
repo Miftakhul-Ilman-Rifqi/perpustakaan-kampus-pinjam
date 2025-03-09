@@ -3,15 +3,17 @@ import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger as WinstonLogger } from 'winston';
+import { Logger } from 'winston';
 import { Server } from 'http';
 import { TestService } from './test.service';
 import { TestModule } from './test.module';
 
 describe('SuperadminController', () => {
   let app: INestApplication;
-  let logger: WinstonLogger; // Gunakan tipe Logger dari winston
+  let logger: Logger; // Gunakan tipe Logger dari winston
   let httpServer: Server; // Tambahkan variabel untuk menyimpan HTTP server
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let testService: TestService;
 
   beforeEach(async () => {
@@ -31,17 +33,14 @@ describe('SuperadminController', () => {
     testService = app.get(TestService);
   });
 
-  describe('POST /api/users', () => {
-    beforeEach(async () => {
-      await testService.deleteUser();
-    });
-
+  describe('POST /api/superadmin/login', () => {
     it('should be rejected if request is invalid', async () => {
-      const response = await request(httpServer).post('/api/users').send({
-        username: '',
-        password: '',
-        name: '',
-      });
+      const response = await request(httpServer)
+        .post('/api/superadmin/login')
+        .send({
+          username: '',
+          password: '',
+        });
 
       logger.info(response.body);
 
@@ -49,32 +48,57 @@ describe('SuperadminController', () => {
       expect(response.body.errors).toBeDefined();
     });
 
-    it('should be able to register', async () => {
-      const response = await request(httpServer).post('/api/users').send({
-        username: 'test',
-        password: 'test',
-        name: 'test',
-      });
+    it('should be able to login', async () => {
+      const response = await request(httpServer)
+        .post('/api/superadmin/login')
+        .send({
+          username: 'rif123',
+          password: 'perpuskampis',
+        });
 
       logger.info(response.body);
 
       expect(response.status).toBe(200);
-      expect(response.body.data.username).toBe('test');
-      expect(response.body.data.name).toBe('test');
+      expect(response.body.data.username).toBe('rif123');
+      expect(response.body.data.full_name).toBe('Miftakhul Ilman Rifqi');
+      expect(response.body.data.token).toBeDefined();
     });
+  });
 
-    it('should be rejected if username already exists', async () => {
-      await testService.createUser();
-      const response = await request(httpServer).post('/api/users').send({
-        username: 'test',
-        password: 'test',
-        name: 'test',
-      });
+  describe('DELETE /api/superadmin/current', () => {
+    it('should be rejected if token is invalid', async () => {
+      const response = await request(httpServer)
+        .delete('/api/superadmin/current')
+        .set(
+          'Authorization',
+          'Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5Y2Zl3WJmZi0yYzVjLTQyODMtODkzOC00NDA1NzMzNGI2ZWQiLCJ1c2VybmFtZSI6InJpZjEyMyIsImlhdCI6MTc0MTUwMTQ0NSwiZXhwIjoxNzQxNTg3ODQ1fQ.bzxy2EYNArPf19PfEVZSRlzdVLVBQqwbHpneBSoTXNBBTB6C5Xgv-SdAzm3nLyDX-LS2qtNBi6dGOD_7XVQKmH2XdO3gEw0MOfZFsEQjLf6BshswXCjzhcWd1OUCafkeaEKyPSnFLi3ZbrtIe2-cyEWPf4qEx8xW8yrX0H12YRf8lk3QsX9iv5o96yq6NoLy82auWE1gP6-4Sm5lnmsstlQkbrqvFKbwCal7WtZ7nI23YkW4uK14Ax229hkC-HxFgezdbMJ_KjTHda6vnnABlDo89ZN1-8o3D_3WUrWKwJYEh-DVZopW62mM0YikJNM5bAqe6Z2RbK1gQxVRL4GOdQ',
+        );
 
       logger.info(response.body);
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(403);
       expect(response.body.errors).toBeDefined();
+    });
+
+    it('should be able to logout user', async () => {
+      // Login untuk mendapatkan token valid
+      const loginResponse = await request(httpServer)
+        .post('/api/superadmin/login')
+        .send({
+          username: 'rif123',
+          password: 'perpuskampis',
+        });
+      const token = loginResponse.body.data.token as string;
+
+      // Lakukan logout
+      const response = await request(httpServer)
+        .delete('/api/superadmin/current')
+        .set('Authorization', `Bearer ${token}`);
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data).toBe(true);
     });
   });
 });

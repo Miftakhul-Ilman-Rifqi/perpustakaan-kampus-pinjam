@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../src/common/prisma.service';
-import * as bcrypt from 'bcrypt';
+// import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class TestService {
@@ -12,13 +12,13 @@ export class TestService {
   //     await this.deleteUser();
   //   }
 
-  async deleteUser() {
-    await this.prismaService.superadmin.deleteMany({
-      where: {
-        username: 'test',
-      },
-    });
-  }
+  // async deleteSuperadmin() {
+  //   await this.prismaService.superadmin.deleteMany({
+  //     where: {
+  //       username: 'rif123',
+  //     },
+  //   });
+  // }
 
   //   async deleteContact() {
   //     await this.prismaService.contact.deleteMany({
@@ -42,16 +42,16 @@ export class TestService {
   //     return user;
   //   }
 
-  async createUser() {
-    await this.prismaService.superadmin.create({
-      data: {
-        username: 'test',
-        full_name: 'test',
-        password: await bcrypt.hash('test', 10),
-        token: 'test',
-      },
-    });
-  }
+  // async createUser() {
+  //   await this.prismaService.superadmin.create({
+  //     data: {
+  //       username: 'test',
+  //       full_name: 'test',
+  //       password: await bcrypt.hash('test', 10),
+  //       token: 'test',
+  //     },
+  //   });
+  // }
 
   //   async getContact(): Promise<Contact> {
   //     const contact = await this.prismaService.contact.findFirst({
