@@ -31,7 +31,7 @@ export class SuperadminService {
     });
 
     if (!superadmin) {
-      throw new HttpException('Username or password is wrong', 401);
+      throw new HttpException('Invalid credentials', 401);
     }
 
     const isValid = await bcrypt.compare(
@@ -40,7 +40,7 @@ export class SuperadminService {
     );
 
     if (!isValid) {
-      throw new HttpException('Username or password is wrong', 401);
+      throw new HttpException('Invalid credentials', 401);
     }
 
     const payload = { sub: superadmin.id, username: superadmin.username };
@@ -52,11 +52,4 @@ export class SuperadminService {
       token,
     };
   }
-
-  // // Tambahkan method logout:
-  // async logout(): Promise<boolean> {
-  //   // Adding await to resolve the async method warning
-  //   await Promise.resolve(true);
-  //   return true;
-  // }
 }

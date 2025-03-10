@@ -34,7 +34,7 @@ describe('SuperadminController', () => {
   });
 
   describe('POST /api/superadmin/login', () => {
-    it('should be rejected if request is invalid', async () => {
+    it('should be rejected if request is empty', async () => {
       const response = await request(httpServer)
         .post('/api/superadmin/login')
         .send({
@@ -42,9 +42,23 @@ describe('SuperadminController', () => {
           password: '',
         });
 
-      logger.info(response.body);
+      logger.info({ data: response.body as Record<string, string[]> });
 
       expect(response.status).toBe(400);
+      expect(response.body.errors).toBeDefined();
+    });
+
+    it('should be rejected if request is invalid', async () => {
+      const response = await request(httpServer)
+        .post('/api/superadmin/login')
+        .send({
+          username: 'rif',
+          password: 'perpus',
+        });
+
+      logger.info({ data: response.body as Record<string, string[]> });
+
+      expect(response.status).toBe(401);
       expect(response.body.errors).toBeDefined();
     });
 
@@ -56,7 +70,7 @@ describe('SuperadminController', () => {
           password: 'perpuskampis',
         });
 
-      logger.info(response.body);
+      logger.info({ data: response.body as Record<string, string[]> });
 
       expect(response.status).toBe(200);
       expect(response.body.data.username).toBe('rif123');
@@ -66,6 +80,17 @@ describe('SuperadminController', () => {
   });
 
   describe('DELETE /api/superadmin/current', () => {
+    it('should be rejected if token is empty', async () => {
+      const response = await request(httpServer)
+        .delete('/api/superadmin/current')
+        .set('Authorization', '');
+
+      logger.info({ data: response.body as Record<string, string[]> });
+
+      expect(response.status).toBe(401);
+      expect(response.body.errors).toBeDefined();
+    });
+
     it('should be rejected if token is invalid', async () => {
       const response = await request(httpServer)
         .delete('/api/superadmin/current')
@@ -74,9 +99,9 @@ describe('SuperadminController', () => {
           'Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5Y2Zl3WJmZi0yYzVjLTQyODMtODkzOC00NDA1NzMzNGI2ZWQiLCJ1c2VybmFtZSI6InJpZjEyMyIsImlhdCI6MTc0MTUwMTQ0NSwiZXhwIjoxNzQxNTg3ODQ1fQ.bzxy2EYNArPf19PfEVZSRlzdVLVBQqwbHpneBSoTXNBBTB6C5Xgv-SdAzm3nLyDX-LS2qtNBi6dGOD_7XVQKmH2XdO3gEw0MOfZFsEQjLf6BshswXCjzhcWd1OUCafkeaEKyPSnFLi3ZbrtIe2-cyEWPf4qEx8xW8yrX0H12YRf8lk3QsX9iv5o96yq6NoLy82auWE1gP6-4Sm5lnmsstlQkbrqvFKbwCal7WtZ7nI23YkW4uK14Ax229hkC-HxFgezdbMJ_KjTHda6vnnABlDo89ZN1-8o3D_3WUrWKwJYEh-DVZopW62mM0YikJNM5bAqe6Z2RbK1gQxVRL4GOdQ',
         );
 
-      logger.info(response.body);
+      logger.info({ data: response.body as Record<string, string[]> });
 
-      expect(response.status).toBe(403);
+      expect(response.status).toBe(401);
       expect(response.body.errors).toBeDefined();
     });
 
@@ -95,7 +120,7 @@ describe('SuperadminController', () => {
         .delete('/api/superadmin/current')
         .set('Authorization', `Bearer ${token}`);
 
-      logger.info(response.body);
+      logger.info({ data: response.body as Record<string, string[]> });
 
       expect(response.status).toBe(200);
       expect(response.body.data).toBe(true);

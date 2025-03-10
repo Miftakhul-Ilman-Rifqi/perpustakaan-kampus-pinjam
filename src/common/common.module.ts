@@ -45,8 +45,17 @@ function isQueryMessage(value: unknown): value is QueryMessage {
   return Boolean(value && typeof value === 'object' && 'query' in value);
 }
 
+// function isErrorMessage(value: unknown): value is ErrorMessage {
+//   return Boolean(value && typeof value === 'object' && 'errors' in value);
+// }
+
 function isErrorMessage(value: unknown): value is ErrorMessage {
-  return Boolean(value && typeof value === 'object' && 'errors' in value);
+  return Boolean(
+    value &&
+      typeof value === 'object' &&
+      'errors' in value &&
+      !('data' in value), // Pastikan bukan DataMessage
+  );
 }
 
 function isDataMessage(value: unknown): value is DataMessage {

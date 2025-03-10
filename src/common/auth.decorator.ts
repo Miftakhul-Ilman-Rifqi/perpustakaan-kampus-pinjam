@@ -16,7 +16,7 @@ export const Auth = createParamDecorator(
     const superadmin = request.superadmin;
 
     if (!superadmin) {
-      throw new HttpException('Unauthorized', 401);
+      throw new HttpException('Authentication required', 401);
     }
 
     return superadmin;
