@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   HttpCode,
+  HttpStatus,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -21,7 +22,7 @@ export class SuperadminController {
   constructor(private superadminService: SuperadminService) {}
 
   @Post('/login')
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   async login(
     @Body() request: LoginSuperadminRequest,
   ): Promise<WebResponse<SuperadminResponse>> {
@@ -31,7 +32,7 @@ export class SuperadminController {
 
   @Delete('/current')
   @UseGuards(CaslGuard)
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async logout(@Auth() _superadmin: Superadmin): Promise<WebResponse<boolean>> {
     await Promise.resolve(true);

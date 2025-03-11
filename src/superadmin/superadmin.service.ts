@@ -1,4 +1,10 @@
-import { HttpException, Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import {
   LoginSuperadminRequest,
   SuperadminResponse,
@@ -31,7 +37,7 @@ export class SuperadminService {
     });
 
     if (!superadmin) {
-      throw new HttpException('Invalid credentials', 401);
+      throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
     }
 
     const isValid = await bcrypt.compare(
@@ -40,7 +46,7 @@ export class SuperadminService {
     );
 
     if (!isValid) {
-      throw new HttpException('Invalid credentials', 401);
+      throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
     }
 
     const payload = { sub: superadmin.id, username: superadmin.username };

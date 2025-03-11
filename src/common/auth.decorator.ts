@@ -3,6 +3,7 @@ import {
   createParamDecorator,
   ExecutionContext,
   HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { Superadmin } from '@prisma/client';
 
@@ -16,7 +17,10 @@ export const Auth = createParamDecorator(
     const superadmin = request.superadmin;
 
     if (!superadmin) {
-      throw new HttpException('Authentication required', 401);
+      throw new HttpException(
+        'Authentication required',
+        HttpStatus.UNAUTHORIZED,
+      );
     }
 
     return superadmin;
