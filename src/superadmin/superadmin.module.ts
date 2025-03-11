@@ -6,5 +6,6 @@ import { SuperadminController } from './superadmin.controller';
   providers: [SuperadminService],
   controllers: [SuperadminController],
   exports: [],
+  imports: [],
 })
 export class SuperadminModule {}
