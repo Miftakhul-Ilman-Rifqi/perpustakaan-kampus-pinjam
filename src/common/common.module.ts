@@ -15,7 +15,6 @@ import { ErrorFilter } from './error.filter';
 import { APP_FILTER } from '@nestjs/core';
 import { AuthMiddleware } from './auth.middleware';
 import { JwtModule } from '@nestjs/jwt';
-import { CaslAbilityFactory } from './casl-ability.factory';
 
 // Define interfaces
 interface QueryMessage {
@@ -44,10 +43,6 @@ function isString(value: unknown): value is string {
 function isQueryMessage(value: unknown): value is QueryMessage {
   return Boolean(value && typeof value === 'object' && 'query' in value);
 }
-
-// function isErrorMessage(value: unknown): value is ErrorMessage {
-//   return Boolean(value && typeof value === 'object' && 'errors' in value);
-// }
 
 function isErrorMessage(value: unknown): value is ErrorMessage {
   return Boolean(
@@ -126,13 +121,12 @@ ${divider}\n`;
   providers: [
     PrismaService,
     ValidationService,
-    CaslAbilityFactory,
     {
       provide: APP_FILTER,
       useClass: ErrorFilter,
     },
   ],
-  exports: [PrismaService, ValidationService, CaslAbilityFactory],
+  exports: [PrismaService, ValidationService],
 })
 export class CommonModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

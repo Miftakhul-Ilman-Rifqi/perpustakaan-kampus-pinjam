@@ -1,10 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../src/common/prisma.service';
-// import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class TestService {
   constructor(private prismaService: PrismaService) {}
+
+  async getUser(): Promise<{ id: string }> {
+    const student = await this.prismaService.student.findFirst({
+      select: {
+        id: true,
+      },
+    });
+
+    if (!student) {
+      throw new Error('Student not found');
+    }
+
+    return student;
+  }
 
   //   async deleteAll() {
   //     await this.deleteAddress();

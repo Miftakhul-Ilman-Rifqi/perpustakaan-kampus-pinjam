@@ -5,7 +5,6 @@ import {
   HttpCode,
   HttpStatus,
   Post,
-  UseGuards,
 } from '@nestjs/common';
 import { SuperadminService } from './superadmin.service';
 import {
@@ -13,9 +12,6 @@ import {
   SuperadminResponse,
 } from '../model/superadmin.model';
 import { WebResponse } from '../model/web.model';
-import { Auth } from '../common/auth.decorator';
-import { Superadmin } from '@prisma/client';
-import { CaslGuard } from '../common/casl.guard';
 
 @Controller(`/api/superadmin`)
 export class SuperadminController {
@@ -31,10 +27,8 @@ export class SuperadminController {
   }
 
   @Delete('/current')
-  @UseGuards(CaslGuard)
   @HttpCode(HttpStatus.OK)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async logout(@Auth() _superadmin: Superadmin): Promise<WebResponse<boolean>> {
+  async logout(): Promise<WebResponse<boolean>> {
     await Promise.resolve(true);
     return { data: true };
   }
