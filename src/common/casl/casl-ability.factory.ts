@@ -7,7 +7,7 @@ import {
 import { Superadmin, Role } from '@prisma/client';
 
 // Mendefinisikan tipe untuk subjek yang dapat diakses
-export type AppSubjects = 'Student' | 'Book' | 'Loan' | 'all';
+export type AppSubjects = 'Superadmin' | 'Student' | 'Book' | 'Loan' | 'all';
 export type AppAbility = MongoAbility<[string, AppSubjects | 'all']>;
 
 @Injectable()

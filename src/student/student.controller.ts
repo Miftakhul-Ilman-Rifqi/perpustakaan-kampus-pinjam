@@ -36,7 +36,7 @@ export class StudentController {
   @Get()
   @UseGuards(AbilitiesGuard)
   // @CanRead('Student')
-  @CheckAbilities({ action: 'read', subject: 'Student' }) // SUPERADMIN dan OPERATOR (keduanya bisa read)
+  @CheckAbilities({ action: 'manage', subject: 'Student' }) // SUPERADMIN dan OPERATOR (keduanya bisa read)
   @HttpCode(HttpStatus.OK)
   async list(): Promise<WebResponse<StudentResponse[]>> {
     const result = await this.studentService.list();
@@ -45,8 +45,7 @@ export class StudentController {
 
   @Post('/search')
   @UseGuards(AbilitiesGuard)
-  // @CanRead('Student')
-  @CheckAbilities({ action: 'read', subject: 'Student' }) // SUPERADMIN dan OPERATOR (keduanya bisa search/read)
+  @CheckAbilities({ action: 'manage', subject: 'Student' }) // SUPERADMIN dan OPERATOR (keduanya bisa search/read)
   @HttpCode(HttpStatus.OK)
   async search(
     @Body() request: SearchStudentRequest,

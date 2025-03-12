@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { SuperadminService } from './superadmin.service';
 import {
@@ -12,6 +13,8 @@ import {
   SuperadminResponse,
 } from '../model/superadmin.model';
 import { WebResponse } from '../model/web.model';
+import { AbilitiesGuard } from '../common/casl/abilities.guard';
+import { CheckAbilities } from '../common/casl/abilities.decorator';
 
 @Controller(`/api/superadmin`)
 export class SuperadminController {
@@ -27,6 +30,8 @@ export class SuperadminController {
   }
 
   @Delete('/current')
+  @UseGuards(AbilitiesGuard)
+  @CheckAbilities({ action: 'manage', subject: 'Superadmin' }) // SUPERADMIN dan OPERATOR (keduanya bisa search/read)
   @HttpCode(HttpStatus.OK)
   async logout(): Promise<WebResponse<boolean>> {
     await Promise.resolve(true);
