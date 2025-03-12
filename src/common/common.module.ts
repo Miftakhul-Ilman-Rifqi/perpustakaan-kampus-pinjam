@@ -15,6 +15,7 @@ import { ErrorFilter } from './error.filter';
 import { APP_FILTER } from '@nestjs/core';
 import { AuthMiddleware } from './auth.middleware';
 import { JwtModule } from '@nestjs/jwt';
+import { CaslModule } from './casl/casl.module';
 
 // Define interfaces
 interface QueryMessage {
@@ -117,6 +118,7 @@ ${divider}\n`;
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    CaslModule,
   ],
   providers: [
     PrismaService,
@@ -126,7 +128,7 @@ ${divider}\n`;
       useClass: ErrorFilter,
     },
   ],
-  exports: [PrismaService, ValidationService],
+  exports: [PrismaService, ValidationService, CaslModule],
 })
 export class CommonModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
