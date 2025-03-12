@@ -1,4 +1,10 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { CaslAbilityFactory } from './casl-ability.factory';
 import { RequiredRule } from './abilities.decorator';
@@ -32,10 +38,22 @@ export class AbilitiesGuard implements CanActivate {
     const user = request.superadmin;
 
     if (!user) {
-      return false; // Jika tidak ada user, maka akses ditolak
+      throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
+      // return false; // Jika tidak ada user, maka akses ditolak
     }
 
     const ability = this.caslAbilityFactory.createForUser(user);
-    return rules.every((rule) => ability.can(rule.action, rule.subject));
+    const hasAbility = rules.every((rule) =>
+      ability.can(rule.action, rule.subject),
+    );
+
+    if (!hasAbility) {
+      throw new HttpException(
+        'Forbidden: Insufficient permissions to access this resource',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    return true;
   }
 }
