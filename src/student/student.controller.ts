@@ -16,7 +16,7 @@ import {
 } from '../model/student.model';
 import { WebResponse } from '../model/web.model';
 import { AbilitiesGuard } from '../common/casl/abilities.guard';
-import { CheckAbilities } from '../common/casl/abilities.decorator';
+import { CanManage, CheckAbilities } from '../common/casl/abilities.decorator';
 
 @Controller(`/api/student`)
 export class StudentController {
@@ -24,8 +24,8 @@ export class StudentController {
 
   @Get('/:id')
   @UseGuards(AbilitiesGuard)
-  // @CanReadOne('Student')
-  @CheckAbilities({ action: 'manage', subject: 'Student' }) // Hanya SUPERADMIN (yang bisa melakukan semua aksi)
+  @CanManage('Student')
+  // @CheckAbilities({ action: 'manage', subject: 'Student' }) // Hanya SUPERADMIN (yang bisa melakukan semua aksi)
   @HttpCode(HttpStatus.OK)
   async get(@Param('id') id: string): Promise<WebResponse<StudentResponse>> {
     const request: GetStudentRequest = { id };
@@ -35,8 +35,8 @@ export class StudentController {
 
   @Get()
   @UseGuards(AbilitiesGuard)
-  // @CanRead('Student')
-  @CheckAbilities({ action: 'manage', subject: 'Student' }) // SUPERADMIN dan OPERATOR (keduanya bisa read)
+  @CanManage('Student')
+  // @CheckAbilities({ action: 'manage', subject: 'Student' }) // SUPERADMIN dan OPERATOR (keduanya bisa read)
   @HttpCode(HttpStatus.OK)
   async list(): Promise<WebResponse<StudentResponse[]>> {
     const result = await this.studentService.list();

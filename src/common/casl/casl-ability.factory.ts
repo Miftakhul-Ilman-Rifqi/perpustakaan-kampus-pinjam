@@ -21,11 +21,9 @@ export class CaslAbilityFactory {
       // Superadmin memiliki akses penuh ke semua resource
       can('manage', 'all');
     } else if (user.role === Role.OPERATOR) {
-      // Operator hanya bisa membaca daftar siswa, tapi tidak bisa mengakses detail siswa
-      // Operator hanya bisa membaca (list dan search) tapi tidak bisa akses detail atau modifikasi
-      can('read', 'Student');
-      cannot('read_one', 'Student');
-      cannot('manage', 'Student'); // Tidak boleh melakukan operasi "manage" yang lebih luas
+      can('update', 'Student');
+      can('delete', 'Student');
+      cannot('read', 'Student');
 
       // Tambahkan aturan lain untuk operator sesuai kebutuhan
     }
