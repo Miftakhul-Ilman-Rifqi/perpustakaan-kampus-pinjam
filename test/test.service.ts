@@ -1,9 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../src/common/prisma.service';
+import { Server } from 'http';
+import * as request from 'supertest';
 
 @Injectable()
 export class TestService {
   constructor(private prismaService: PrismaService) {}
+
+  async login(httpServer: Server): Promise<string> {
+    const loginResponse = await request(httpServer)
+      .post('/api/superadmin/login')
+      .send({
+        username: 'rif123',
+        password: 'perpuskampis',
+      });
+    return loginResponse.body.data.token as string;
+  }
 
   async getUser(): Promise<{ id: string }> {
     const student = await this.prismaService.student.findFirst({

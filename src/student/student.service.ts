@@ -80,7 +80,11 @@ export class StudentService {
   }> {
     const searchRequest = this.validationService.validate(
       StudentValidation.SEARCH,
-      request,
+      {
+        ...request,
+        page: request.page || 1,
+        size: request.size || 10,
+      },
     ) as SearchStudentRequest;
 
     const filters: Filter[] = [];

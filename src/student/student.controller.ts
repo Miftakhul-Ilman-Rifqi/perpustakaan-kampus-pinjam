@@ -1,11 +1,11 @@
 import {
-  Body,
   Controller,
   Get,
   HttpCode,
   HttpStatus,
   Param,
-  Post,
+  ParseIntPipe,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { StudentService } from './student.service';
@@ -21,6 +21,32 @@ import { CanManage, CheckAbilities } from '../common/casl/abilities.decorator';
 @Controller(`/api/student`)
 export class StudentController {
   constructor(private studentService: StudentService) {}
+
+  @Get('/search')
+  @UseGuards(AbilitiesGuard)
+  @CheckAbilities({ action: 'manage', subject: 'Student' }) // SUPERADMIN dan OPERATOR (keduanya bisa search/read)
+  @HttpCode(HttpStatus.OK)
+  async search(
+    @Query('full_name') full_name?: string,
+    @Query('nim') nim?: string,
+    @Query('page', new ParseIntPipe({ optional: true }))
+    page: number = 1,
+    @Query('size', new ParseIntPipe({ optional: true }))
+    size: number = 10,
+  ): Promise<WebResponse<StudentResponse[]>> {
+    const request: SearchStudentRequest = {
+      full_name,
+      nim,
+      page,
+      size,
+    };
+
+    const result = await this.studentService.search(request);
+    return {
+      data: result.data,
+      paging: result.paging,
+    };
+  }
 
   @Get('/:id')
   @UseGuards(AbilitiesGuard)
@@ -41,19 +67,5 @@ export class StudentController {
   async list(): Promise<WebResponse<StudentResponse[]>> {
     const result = await this.studentService.list();
     return { data: result };
-  }
-
-  @Post('/search')
-  @UseGuards(AbilitiesGuard)
-  @CheckAbilities({ action: 'manage', subject: 'Student' }) // SUPERADMIN dan OPERATOR (keduanya bisa search/read)
-  @HttpCode(HttpStatus.OK)
-  async search(
-    @Body() request: SearchStudentRequest,
-  ): Promise<WebResponse<StudentResponse[]>> {
-    const result = await this.studentService.search(request);
-    return {
-      data: result.data,
-      paging: result.paging,
-    };
   }
 }

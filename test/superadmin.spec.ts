@@ -13,7 +13,6 @@ describe('SuperadminController', () => {
   let logger: Logger; // Gunakan tipe Logger dari winston
   let httpServer: Server; // Tambahkan variabel untuk menyimpan HTTP server
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let testService: TestService;
 
   beforeEach(async () => {
@@ -80,6 +79,12 @@ describe('SuperadminController', () => {
   });
 
   describe('DELETE /api/superadmin/current', () => {
+    let token: string;
+
+    beforeEach(async () => {
+      token = await testService.login(httpServer);
+    });
+
     it('should be rejected if token is empty', async () => {
       const response = await request(httpServer)
         .delete('/api/superadmin/current')
@@ -106,15 +111,6 @@ describe('SuperadminController', () => {
     });
 
     it('should be able to logout user', async () => {
-      // Login untuk mendapatkan token valid
-      const loginResponse = await request(httpServer)
-        .post('/api/superadmin/login')
-        .send({
-          username: 'rif123',
-          password: 'perpuskampis',
-        });
-      const token = loginResponse.body.data.token as string;
-
       // Lakukan logout
       const response = await request(httpServer)
         .delete('/api/superadmin/current')
