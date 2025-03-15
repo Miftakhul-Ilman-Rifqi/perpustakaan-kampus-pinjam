@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../src/common/prisma.service';
 import { Server } from 'http';
 import * as request from 'supertest';
+import { Book } from '@prisma/client';
 
 @Injectable()
 export class TestService {
@@ -29,6 +30,33 @@ export class TestService {
     }
 
     return student;
+  }
+
+  async deleteAllBook() {
+    await this.prismaService.book.deleteMany({});
+  }
+
+  async createBook() {
+    await this.prismaService.book.create({
+      data: {
+        title: 'Buku AI',
+        stock: 2,
+      },
+    });
+  }
+
+  async getBook(): Promise<Book> {
+    const book = await this.prismaService.book.findUnique({
+      where: {
+        title: 'Buku AI',
+      },
+    });
+
+    if (!book) {
+      throw new Error('book not found');
+    }
+
+    return book;
   }
 
   //   async deleteAll() {
