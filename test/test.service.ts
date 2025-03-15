@@ -59,6 +59,29 @@ export class TestService {
     return book;
   }
 
+  async createBookV2() {
+    await this.prismaService.book.create({
+      data: {
+        title: 'Buku Code',
+        stock: 2,
+      },
+    });
+  }
+
+  async getBookV2(): Promise<Book> {
+    const book = await this.prismaService.book.findUnique({
+      where: {
+        title: 'Buku Code',
+      },
+    });
+
+    if (!book) {
+      throw new Error('book not found');
+    }
+
+    return book;
+  }
+
   //   async deleteAll() {
   //     await this.deleteAddress();
   //     await this.deleteContact();

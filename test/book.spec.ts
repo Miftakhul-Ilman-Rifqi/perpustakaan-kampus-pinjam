@@ -125,6 +125,97 @@ describe('BookController', () => {
     });
   });
 
+  describe('PATCH /api/books/:id', () => {
+    beforeEach(async () => {
+      await testService.deleteAllBook();
+      await testService.createBook();
+    });
+
+    it('should be able to update title only', async () => {
+      const book = await testService.getBook();
+      const response = await request(httpServer)
+        .patch(`/api/books/${book.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          title: 'Buku Cerdas',
+        });
+
+      logger.info({ data: response.body as Record<string, string[]> });
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.id).toBe(book.id);
+      expect(response.body.data.title).toBe('Buku Cerdas');
+      expect(response.body.data.stock).toBe(2);
+    });
+
+    it('should be able to update stock only', async () => {
+      const book = await testService.getBook();
+      const response = await request(httpServer)
+        .patch(`/api/books/${book.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          stock: 4,
+        });
+
+      logger.info({ data: response.body as Record<string, string[]> });
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.id).toBe(book.id);
+      expect(response.body.data.title).toBe(book.title);
+      expect(response.body.data.stock).toBe(4);
+    });
+
+    it('should be able to update title and stock', async () => {
+      const book = await testService.getBook();
+      const response = await request(httpServer)
+        .patch(`/api/books/${book.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          title: 'Buku Serbaguna',
+          stock: 10,
+        });
+
+      logger.info({ data: response.body as Record<string, string[]> });
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.id).toBe(book.id);
+      expect(response.body.data.title).toBe('Buku Serbaguna');
+      expect(response.body.data.stock).toBe(10);
+    });
+
+    it('should be rejected if book title already exists', async () => {
+      await testService.createBookV2();
+      const duplicateBook = await testService.getBook();
+
+      const response = await request(httpServer)
+        .patch(`/api/books/${duplicateBook.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          title: 'Buku Code',
+          stock: 5,
+        });
+
+      logger.info({ data: response.body as Record<string, string[]> });
+
+      expect(response.status).toBe(409);
+    });
+
+    it('should be rejected if book does not exist', async () => {
+      const invalidUuid = '201dfe0a-adf3-442e-8c69-c709bd7aec14';
+      const response = await request(httpServer)
+        .patch(`/api/books/${invalidUuid}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          title: 'Buku Baru',
+          stock: 3,
+        });
+
+      logger.info({ data: response.body as Record<string, string[]> });
+
+      expect(response.status).toBe(404);
+    });
+  });
+
   // describe('GET /api/student/:id', () => {
   //   it('should be rejected if student is not found', async () => {
   //     // Using an invalid UUID that doesn't exist in the system

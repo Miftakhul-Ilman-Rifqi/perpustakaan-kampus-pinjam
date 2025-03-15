@@ -9,8 +9,8 @@ export class GetBookRequest {
 
 export class UpdateBookRequest {
   id: string;
-  title: string;
-  stock: number;
+  title?: string;
+  stock?: number;
 }
 
 export class RemoveBookRequest {

@@ -12,6 +12,7 @@ import {
   BookResponse,
   CreateBookRequest,
   GetBookRequest,
+  UpdateBookRequest,
 } from '../model/book.model';
 import { BookValidation } from './book.validation';
 import { Book } from '@prisma/client';
@@ -62,10 +63,6 @@ export class BookService {
         error instanceof PrismaClientKnownRequestError &&
         error.code === 'P2002' // Unique constraint failed
       ) {
-        this.logger.error(
-          `Gagal membuat buku, judul sudah ada: ${createRequest.title}`,
-          error.stack,
-        ); // Pakai error.stack untuk detail error
         throw new HttpException(
           'Book title already exists.',
           HttpStatus.CONFLICT,
@@ -100,6 +97,51 @@ export class BookService {
     } catch (error) {
       this.logger.error(`Failed to get book: ${error.message}`, error.stack);
       throw error;
+    }
+  }
+
+  async update(request: UpdateBookRequest): Promise<BookResponse> {
+    const updateRequest = this.validationService.validate(
+      BookValidation.UPDATE,
+      request,
+    ) as UpdateBookRequest;
+
+    try {
+      return await this.prismaService.$transaction(async (prisma) => {
+        // Update buku
+        const book = await prisma.book.update({
+          where: {
+            id: updateRequest.id,
+          },
+          data: {
+            title: updateRequest.title,
+            stock: updateRequest.stock,
+          },
+        });
+
+        return this.toBookResponse(book);
+      });
+    } catch (error) {
+      // Handle Prisma error
+      if (error instanceof PrismaClientKnownRequestError) {
+        switch (error.code) {
+          case 'P2002': // Unique constraint (title already exists)
+            throw new HttpException(
+              'Book title already exists',
+              HttpStatus.CONFLICT,
+            );
+          case 'P2025': // Not found (invalid ID)
+            throw new HttpException('Book not found', HttpStatus.NOT_FOUND);
+          default:
+            break;
+        }
+      }
+
+      this.logger.error(`Failed to update book: ${error.message}`, error.stack);
+      throw new HttpException(
+        'Failed to update book',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 

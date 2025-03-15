@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -17,6 +18,7 @@ import {
   BookResponse,
   CreateBookRequest,
   GetBookRequest,
+  UpdateBookRequest,
 } from '../model/book.model';
 
 @Controller(`/api/books`)
@@ -41,6 +43,19 @@ export class BookController {
   async get(@Param('id') id: string): Promise<WebResponse<BookResponse>> {
     const request: GetBookRequest = { id };
     const result = await this.bookService.get(request);
+    return { data: result };
+  }
+
+  @Patch('/:id')
+  @UseGuards(AbilitiesGuard)
+  @CanManage('Book')
+  @HttpCode(HttpStatus.OK)
+  async update(
+    @Param('id') id: string,
+    @Body() updateData: Partial<CreateBookRequest>,
+  ): Promise<WebResponse<BookResponse>> {
+    const request: UpdateBookRequest = { id, ...updateData };
+    const result = await this.bookService.update(request);
     return { data: result };
   }
 
