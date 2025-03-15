@@ -247,6 +247,43 @@ describe('BookController', () => {
     });
   });
 
+  describe('GET /api/books', () => {
+    beforeEach(async () => {
+      await testService.deleteAllBook();
+    });
+
+    it('should be able to get list of books', async () => {
+      // Tambahkan beberapa buku ke database
+      await testService.createBook(); // Buku AI
+      await testService.createBookV2(); // Buku Code
+
+      const response = await request(httpServer)
+        .get('/api/books')
+        .set('Authorization', `Bearer ${token}`);
+
+      logger.info({ data: response.body as Record<string, string[]> });
+
+      expect(response.status).toBe(200);
+      expect(response.body.data).toBeInstanceOf(Array);
+      expect(response.body.data.length).toBe(2);
+
+      // Verifikasi bahwa buku diurutkan berdasarkan judul
+      expect(response.body.data[0].title).toBe('Buku AI');
+      expect(response.body.data[1].title).toBe('Buku Code');
+    });
+
+    it('should be rejected if no books are found', async () => {
+      const response = await request(httpServer)
+        .get('/api/books')
+        .set('Authorization', `Bearer ${token}`);
+
+      logger.info({ data: response.body as Record<string, string[]> });
+
+      expect(response.status).toBe(404);
+      expect(response.body.errors).toBeDefined();
+    });
+  });
+
   // describe('GET /api/student/:id', () => {
   //   it('should be rejected if student is not found', async () => {
   //     // Using an invalid UUID that doesn't exist in the system

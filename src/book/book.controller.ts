@@ -71,6 +71,15 @@ export class BookController {
     return { data: result };
   }
 
+  @Get()
+  @UseGuards(AbilitiesGuard)
+  @CanManage('Book')
+  @HttpCode(HttpStatus.OK)
+  async list(): Promise<WebResponse<BookResponse[]>> {
+    const result = await this.bookService.list();
+    return { data: result };
+  }
+
   // @Get('/search')
   // @UseGuards(AbilitiesGuard)
   // @CheckAbilities({ action: 'manage', subject: 'Student' }) // SUPERADMIN dan OPERATOR (keduanya bisa search/read)

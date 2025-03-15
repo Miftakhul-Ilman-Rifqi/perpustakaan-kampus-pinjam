@@ -146,6 +146,25 @@ export class BookService {
     }
   }
 
+  async list(): Promise<BookResponse[]> {
+    try {
+      const books = await this.prismaService.book.findMany({
+        orderBy: {
+          title: 'asc',
+        },
+      });
+
+      if (books.length === 0) {
+        throw new HttpException('Data not found', HttpStatus.NOT_FOUND);
+      }
+
+      return books.map((book) => this.toBookResponse(book));
+    } catch (error) {
+      this.logger.error(`Failed to list books: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
   // async remove(request: RemoveBookRequest): Promise<boolean> {
   //   const removeRequest = this.validationService.validate(
   //     BookValidation.REMOVE,
