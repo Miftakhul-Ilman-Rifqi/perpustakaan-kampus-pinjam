@@ -45,7 +45,7 @@ export class TestService {
     });
   }
 
-  async getBook(): Promise<Book> {
+  async getBook(): Promise<Book | null> {
     const book = await this.prismaService.book.findUnique({
       where: {
         title: 'Buku AI',
@@ -56,7 +56,7 @@ export class TestService {
       throw new Error('book not found');
     }
 
-    return book;
+    return book ?? null;
   }
 
   async createBookV2() {

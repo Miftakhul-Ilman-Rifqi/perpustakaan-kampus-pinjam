@@ -12,6 +12,7 @@ import {
   BookResponse,
   CreateBookRequest,
   GetBookRequest,
+  RemoveBookRequest,
   UpdateBookRequest,
 } from '../model/book.model';
 import { BookValidation } from './book.validation';
@@ -140,6 +141,77 @@ export class BookService {
       this.logger.error(`Failed to update book: ${error.message}`, error.stack);
       throw new HttpException(
         'Failed to update book',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  // async remove(request: RemoveBookRequest): Promise<boolean> {
+  //   const removeRequest = this.validationService.validate(
+  //     BookValidation.REMOVE,
+  //     request,
+  //   ) as RemoveBookRequest;
+
+  //   try {
+  //     // Di sini Anda bisa menambahkan logika untuk memeriksa apakah buku sedang dipinjam
+  //     // Misalnya jika ada model Loan, periksa apakah ada pinjaman aktif untuk buku ini
+
+  //     await this.prismaService.book.delete({
+  //       where: {
+  //         id: removeRequest.id,
+  //       },
+  //     });
+
+  //     return true;
+  //   } catch (error) {
+  //     this.logger.error(`Failed to remove book: ${error.message}`, error.stack);
+
+  //     // Jika error terkait foreign key constraint (buku sedang dipinjam)
+  //     if (error.code === 'P2003') {
+  //       throw new HttpException(
+  //         'Book has active loans',
+  //         HttpStatus.BAD_REQUEST,
+  //       );
+  //     }
+
+  //     throw error;
+  //   }
+  // }
+
+  async remove(request: RemoveBookRequest): Promise<boolean> {
+    const removeRequest = this.validationService.validate(
+      BookValidation.REMOVE,
+      request,
+    ) as RemoveBookRequest;
+
+    try {
+      return await this.prismaService.$transaction(async (prisma) => {
+        await prisma.book.delete({
+          where: {
+            id: removeRequest.id,
+          },
+        });
+
+        return true;
+      });
+    } catch (error) {
+      // Handle Prisma error
+      if (error instanceof PrismaClientKnownRequestError) {
+        switch (error.code) {
+          case 'P2003':
+            throw new HttpException(
+              'Book has active loans',
+              HttpStatus.BAD_REQUEST,
+            );
+          case 'P2025': // Not found (invalid ID)
+            throw new HttpException('Book not found', HttpStatus.NOT_FOUND);
+          default:
+            break;
+        }
+      }
+
+      throw new HttpException(
+        'Failed to remove book',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

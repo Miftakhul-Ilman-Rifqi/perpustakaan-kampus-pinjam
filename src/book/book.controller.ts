@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -18,6 +19,7 @@ import {
   BookResponse,
   CreateBookRequest,
   GetBookRequest,
+  RemoveBookRequest,
   UpdateBookRequest,
 } from '../model/book.model';
 
@@ -56,6 +58,16 @@ export class BookController {
   ): Promise<WebResponse<BookResponse>> {
     const request: UpdateBookRequest = { id, ...updateData };
     const result = await this.bookService.update(request);
+    return { data: result };
+  }
+
+  @Delete('/:id')
+  @UseGuards(AbilitiesGuard)
+  @CanManage('Book')
+  @HttpCode(HttpStatus.OK)
+  async remove(@Param('id') id: string): Promise<WebResponse<boolean>> {
+    const request: RemoveBookRequest = { id };
+    const result = await this.bookService.remove(request);
     return { data: result };
   }
 
