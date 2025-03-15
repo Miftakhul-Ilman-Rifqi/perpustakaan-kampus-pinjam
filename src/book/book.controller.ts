@@ -6,8 +6,10 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 
@@ -20,12 +22,39 @@ import {
   CreateBookRequest,
   GetBookRequest,
   RemoveBookRequest,
+  SearchBookRequest,
   UpdateBookRequest,
 } from '../model/book.model';
 
 @Controller(`/api/books`)
 export class BookController {
   constructor(private bookService: BookService) {}
+
+  @Get('/search')
+  @UseGuards(AbilitiesGuard)
+  @CanManage('Book')
+  @HttpCode(HttpStatus.OK)
+  async search(
+    @Query('id') id?: string,
+    @Query('title') title?: string,
+    @Query('page', new ParseIntPipe({ optional: true }))
+    page: number = 1,
+    @Query('size', new ParseIntPipe({ optional: true }))
+    size: number = 10,
+  ): Promise<WebResponse<BookResponse[]>> {
+    const request: SearchBookRequest = {
+      id,
+      title,
+      page,
+      size,
+    };
+
+    const result = await this.bookService.search(request);
+    return {
+      data: result.data,
+      paging: result.paging,
+    };
+  }
 
   @Post()
   @UseGuards(AbilitiesGuard)
@@ -79,51 +108,4 @@ export class BookController {
     const result = await this.bookService.list();
     return { data: result };
   }
-
-  // @Get('/search')
-  // @UseGuards(AbilitiesGuard)
-  // @CheckAbilities({ action: 'manage', subject: 'Student' }) // SUPERADMIN dan OPERATOR (keduanya bisa search/read)
-  // @HttpCode(HttpStatus.OK)
-  // async search(
-  //   @Query('full_name') full_name?: string,
-  //   @Query('nim') nim?: string,
-  //   @Query('page', new ParseIntPipe({ optional: true }))
-  //   page: number = 1,
-  //   @Query('size', new ParseIntPipe({ optional: true }))
-  //   size: number = 10,
-  // ): Promise<WebResponse<StudentResponse[]>> {
-  //   const request: SearchStudentRequest = {
-  //     full_name,
-  //     nim,
-  //     page,
-  //     size,
-  //   };
-
-  //   const result = await this.studentService.search(request);
-  //   return {
-  //     data: result.data,
-  //     paging: result.paging,
-  //   };
-  // }
-
-  // @Get('/:id')
-  // @UseGuards(AbilitiesGuard)
-  // @CanManage('Student')
-  // // @CheckAbilities({ action: 'manage', subject: 'Student' }) // Hanya SUPERADMIN (yang bisa melakukan semua aksi)
-  // @HttpCode(HttpStatus.OK)
-  // async get(@Param('id') id: string): Promise<WebResponse<StudentResponse>> {
-  //   const request: GetStudentRequest = { id };
-  //   const result = await this.studentService.get(request);
-  //   return { data: result };
-  // }
-
-  // @Get()
-  // @UseGuards(AbilitiesGuard)
-  // @CanManage('Student')
-  // // @CheckAbilities({ action: 'manage', subject: 'Student' }) // SUPERADMIN dan OPERATOR (keduanya bisa read)
-  // @HttpCode(HttpStatus.OK)
-  // async list(): Promise<WebResponse<StudentResponse[]>> {
-  //   const result = await this.studentService.list();
-  //   return { data: result };
-  // }
 }

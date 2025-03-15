@@ -82,6 +82,31 @@ export class TestService {
     return book;
   }
 
+  async createBookMass() {
+    const books: { title: string; stock: number }[] = [];
+
+    for (let i = 1; i <= 15; i++) {
+      books.push({
+        title: `Buku Test ${i}`,
+        stock: i + 5,
+      });
+    }
+
+    // Create books dengan Promise.all
+    await Promise.all(
+      books.map((book) =>
+        this.prismaService.book.create({
+          data: {
+            title: book.title,
+            stock: book.stock,
+          },
+        }),
+      ),
+    );
+
+    return true;
+  }
+
   //   async deleteAll() {
   //     await this.deleteAddress();
   //     await this.deleteContact();
