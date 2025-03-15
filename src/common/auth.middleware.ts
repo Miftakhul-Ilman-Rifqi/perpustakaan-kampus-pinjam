@@ -35,9 +35,9 @@ export class AuthMiddleware implements NestMiddleware {
 
   async use(req: RequestWithSuperadmin, res: Response, next: NextFunction) {
     const authHeader = req.headers.authorization;
-    this.logger.info(
-      `Authorization header: ${authHeader || 'No authorization header provided'}`,
-    );
+    // this.logger.info(
+    //   `Authorization header: ${authHeader || 'No authorization header provided'}`,
+    // );
 
     // Jika tidak ada header atau bukan format Bearer
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -71,13 +71,13 @@ export class AuthMiddleware implements NestMiddleware {
 
       // Jika superadmin tidak ditemukan
       if (!superadmin) {
-        this.logger.warn(`Superadmin not found for token: ${token}`);
+        // this.logger.warn(`Superadmin not found for token: ${token}`);
         throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
       }
 
       // Token kedaluwarsa
       if (payload.exp && payload.exp * 1000 < Date.now()) {
-        this.logger.warn(`Expired token used: ${token}`);
+        // this.logger.warn(`Expired token used: ${token}`);
         throw new HttpException('Token expired', HttpStatus.UNAUTHORIZED);
       }
 
