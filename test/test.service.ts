@@ -92,8 +92,8 @@ export class TestService {
       });
     }
 
-    // Create books dengan Promise.all
-    await Promise.all(
+    // Create books in a transaction to prevent conflicts
+    await this.prismaService.$transaction(
       books.map((book) =>
         this.prismaService.book.create({
           data: {
