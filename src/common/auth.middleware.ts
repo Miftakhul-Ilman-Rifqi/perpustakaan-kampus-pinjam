@@ -83,9 +83,9 @@ export class AuthMiddleware implements NestMiddleware {
 
       // Attach superadmin ke request
       req.superadmin = superadmin;
-      this.logger.info(
-        `Superadmin found and attached to request: ${superadmin.id}`,
-      );
+      // this.logger.info(
+      //   `Superadmin found and attached to request: ${superadmin.id}`,
+      // );
       next();
     } catch (error: any) {
       this.logger.error(`JWT Error: ${error.message}`);

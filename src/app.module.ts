@@ -4,9 +4,10 @@ import { SuperadminModule } from './superadmin/superadmin.module';
 import { StudentModule } from './student/student.module';
 import { APP_GUARD } from '@nestjs/core';
 import { AbilitiesGuard } from './common/casl/abilities.guard';
+import { BookModule } from './book/book.module';
 
 @Module({
-  imports: [CommonModule, SuperadminModule, StudentModule],
+  imports: [CommonModule, SuperadminModule, StudentModule, BookModule],
   controllers: [],
   providers: [
     {

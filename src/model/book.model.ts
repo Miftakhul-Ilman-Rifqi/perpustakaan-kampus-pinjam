@@ -1,6 +1,6 @@
 export class CreateBookRequest {
   title: string;
-  stock: string;
+  stock: number;
 }
 
 export class GetBookRequest {
@@ -10,14 +10,14 @@ export class GetBookRequest {
 export class UpdateBookRequest {
   id: string;
   title: string;
-  stock: string;
+  stock: number;
 }
 
 export class RemoveBookRequest {
   id: string;
 }
 
-export class SearchStudentRequest {
+export class SearchBookRequest {
   id?: string;
   title?: string;
   page: number;
@@ -27,5 +27,5 @@ export class SearchStudentRequest {
 export class BookResponse {
   id: string;
   title: string;
-  stock: string;
+  stock: number;
 }
