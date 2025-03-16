@@ -75,7 +75,11 @@ export class StudentService {
   async list(): Promise<StudentResponse[]> {
     try {
       return await this.prismaService.$transaction(async (prisma) => {
-        const students = await prisma.student.findMany({});
+        const students = await prisma.student.findMany({
+          orderBy: {
+            full_name: 'asc',
+          },
+        });
 
         return students.map((student) => this.toStudentResponse(student));
       });
