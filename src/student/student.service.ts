@@ -14,6 +14,7 @@ import {
   StudentResponse,
 } from '../model/student.model';
 import { StudentValidation } from './student.validation';
+import { Student } from '@prisma/client';
 
 interface Filter {
   full_name?: { contains: string };
@@ -28,6 +29,14 @@ export class StudentService {
     private logger: Logger,
     private prismaService: PrismaService,
   ) {}
+
+  private toStudentResponse(student: Student): StudentResponse {
+    return {
+      id: student.id,
+      full_name: student.full_name,
+      nim: student.nim,
+    };
+  }
 
   async get(request: GetStudentRequest): Promise<StudentResponse> {
     const getRequest = this.validationService.validate(
@@ -45,11 +54,7 @@ export class StudentService {
         throw new HttpException('Student not found', HttpStatus.NOT_FOUND);
       }
 
-      return {
-        id: student.id,
-        full_name: student.full_name,
-        nim: student.nim,
-      };
+      return this.toStudentResponse(student);
     });
   }
 
@@ -62,11 +67,7 @@ export class StudentService {
         throw new HttpException('Data not found', HttpStatus.NOT_FOUND);
       }
 
-      return students.map((student) => ({
-        id: student.id,
-        full_name: student.full_name,
-        nim: student.nim,
-      }));
+      return students.map((student) => this.toStudentResponse(student));
     });
   }
 
@@ -124,11 +125,7 @@ export class StudentService {
       });
 
       return {
-        data: students.map((student) => ({
-          id: student.id,
-          full_name: student.full_name,
-          nim: student.nim,
-        })),
+        data: students.map((student) => this.toStudentResponse(student)),
         paging: {
           current_page: searchRequest.page,
           size: searchRequest.size,
