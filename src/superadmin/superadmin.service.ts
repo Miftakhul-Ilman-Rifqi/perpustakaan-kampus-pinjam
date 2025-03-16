@@ -15,6 +15,7 @@ import { PrismaService } from '../common/prisma.service';
 import { SuperadminValidation } from './superadmin.validation';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class SuperadminService {
@@ -32,30 +33,57 @@ export class SuperadminService {
       request,
     ) as LoginSuperadminRequest;
 
-    const superadmin = await this.prismaService.superadmin.findUnique({
-      where: { username: loginRequest.username },
-    });
+    try {
+      return await this.prismaService.$transaction(async (prisma) => {
+        const superadmin = await prisma.superadmin.findUnique({
+          where: { username: loginRequest.username },
+        });
 
-    if (!superadmin) {
-      throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+        if (!superadmin) {
+          throw new HttpException(
+            'Invalid credentials',
+            HttpStatus.UNAUTHORIZED,
+          );
+        }
+
+        const isValid = await bcrypt.compare(
+          loginRequest.password,
+          superadmin.password,
+        );
+
+        if (!isValid) {
+          throw new HttpException(
+            'Invalid credentials',
+            HttpStatus.UNAUTHORIZED,
+          );
+        }
+
+        const payload = { sub: superadmin.id, username: superadmin.username };
+        const token = this.jwtService.sign(payload);
+
+        return {
+          username: superadmin.username,
+          full_name: superadmin.full_name,
+          token,
+        };
+      });
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      if (error instanceof PrismaClientKnownRequestError) {
+        this.logger.error(
+          `Database error during login: ${error.code}`,
+          error.stack,
+        );
+      }
+
+      this.logger.error(`Failed to login: ${error.message}`, error.stack);
+      throw new HttpException(
+        'Failed to login',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
-
-    const isValid = await bcrypt.compare(
-      loginRequest.password,
-      superadmin.password,
-    );
-
-    if (!isValid) {
-      throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
-    }
-
-    const payload = { sub: superadmin.id, username: superadmin.username };
-    const token = this.jwtService.sign(payload); // Otomatis pakai private key dari config
-
-    return {
-      username: superadmin.username,
-      full_name: superadmin.full_name,
-      token,
-    };
   }
 }
