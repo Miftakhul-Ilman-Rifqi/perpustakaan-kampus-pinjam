@@ -272,15 +272,15 @@ describe('BookController', () => {
       expect(response.body.data[1].title).toBe('Buku Code');
     });
 
-    it('should be rejected if no books are found', async () => {
+    it('should be able if no books are found', async () => {
       const response = await request(httpServer)
         .get('/api/books')
         .set('Authorization', `Bearer ${token}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
-      expect(response.status).toBe(404);
-      expect(response.body.errors).toBeDefined();
+      expect(response.status).toBe(200);
+      expect(response.body.data).toBeDefined();
     });
   });
 
