@@ -50,7 +50,6 @@ export class BookService {
 
     try {
       return await this.prismaService.$transaction(async (prisma) => {
-        // Buat buku baru
         const book = await prisma.book.create({
           data: {
             title: createRequest.title,
@@ -63,16 +62,16 @@ export class BookService {
     } catch (error) {
       if (
         error instanceof PrismaClientKnownRequestError &&
-        error.code === 'P2002' // Unique constraint failed
+        error.code === 'P2002'
       ) {
         throw new HttpException(
           'Book title already exists.',
           HttpStatus.CONFLICT,
         );
       }
-      this.logger.error('Gagal membuat buku:', error.stack);
+      this.logger.error('Failed to create book:', error.stack);
       throw new HttpException(
-        'Gagal membuat buku.',
+        'Failed to create book.',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -85,20 +84,29 @@ export class BookService {
     ) as GetBookRequest;
 
     try {
-      const book = await this.prismaService.book.findUnique({
-        where: {
-          id: getRequest.id,
-        },
-      });
+      return await this.prismaService.$transaction(async (prisma) => {
+        const book = await prisma.book.findUniqueOrThrow({
+          where: { id: getRequest.id },
+        });
 
-      if (!book) {
-        throw new HttpException('Book not found', HttpStatus.NOT_FOUND);
+        return this.toBookResponse(book);
+      });
+    } catch (error) {
+      // Handle Prisma error
+      if (error instanceof PrismaClientKnownRequestError) {
+        switch (error.code) {
+          case 'P2025': // Not found (invalid ID)
+            throw new HttpException('Book not found', HttpStatus.NOT_FOUND);
+          default:
+            break;
+        }
       }
 
-      return this.toBookResponse(book);
-    } catch (error) {
       this.logger.error(`Failed to get book: ${error.message}`, error.stack);
-      throw error;
+      throw new HttpException(
+        'Failed to get book',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -149,20 +157,21 @@ export class BookService {
 
   async list(): Promise<BookResponse[]> {
     try {
-      const books = await this.prismaService.book.findMany({
-        orderBy: {
-          title: 'asc',
-        },
+      return await this.prismaService.$transaction(async (prisma) => {
+        const books = await prisma.book.findMany({
+          orderBy: {
+            title: 'asc',
+          },
+        });
+
+        return books.map((book) => this.toBookResponse(book));
       });
-
-      if (books.length === 0) {
-        throw new HttpException('Data not found', HttpStatus.NOT_FOUND);
-      }
-
-      return books.map((book) => this.toBookResponse(book));
     } catch (error) {
       this.logger.error(`Failed to list books: ${error.message}`, error.stack);
-      throw error;
+      throw new HttpException(
+        'Failed to list books',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -240,36 +249,47 @@ export class BookService {
       });
     }
 
-    const skip = (searchRequest.page - 1) * searchRequest.size;
+    try {
+      // Using Prisma transaction for consistency
+      return await this.prismaService.$transaction(async (prisma) => {
+        const skip = (searchRequest.page - 1) * searchRequest.size;
 
-    // Using Prisma transaction for consistency
-    return await this.prismaService.$transaction(async (prisma) => {
-      const books = await prisma.book.findMany({
-        where: {
-          AND: filters,
-        },
-        take: searchRequest.size,
-        skip: skip,
+        const books = await prisma.book.findMany({
+          where: {
+            AND: filters,
+          },
+          take: searchRequest.size,
+          skip: skip,
+        });
+
+        const total = await prisma.book.count({
+          where: {
+            AND: filters,
+          },
+        });
+
+        return {
+          data: books.map((book) => ({
+            id: book.id,
+            title: book.title,
+            stock: book.stock,
+          })),
+          paging: {
+            current_page: searchRequest.page,
+            size: searchRequest.size,
+            total_page: Math.ceil(total / searchRequest.size),
+          },
+        };
       });
-
-      const total = await prisma.book.count({
-        where: {
-          AND: filters,
-        },
-      });
-
-      return {
-        data: books.map((book) => ({
-          id: book.id,
-          title: book.title,
-          stock: book.stock,
-        })),
-        paging: {
-          current_page: searchRequest.page,
-          size: searchRequest.size,
-          total_page: Math.ceil(total / searchRequest.size),
-        },
-      };
-    });
+    } catch (error) {
+      this.logger.error(
+        `Failed to search books: ${error.message}`,
+        error.stack,
+      );
+      throw new HttpException(
+        'Failed to search books',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }
