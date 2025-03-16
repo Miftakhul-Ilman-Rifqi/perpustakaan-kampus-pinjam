@@ -10,7 +10,7 @@ export class TestService {
 
   async login(httpServer: Server): Promise<string> {
     const loginResponse = await request(httpServer)
-      .post('/api/superadmin/login')
+      .post('/api/superadmins/login')
       .send({
         username: 'rif123',
         password: 'perpuskampis',
