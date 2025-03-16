@@ -41,7 +41,7 @@ or
 
 ## Login Superadmin
 
-Endpoint : POST /api/superadmin/login
+Endpoint : POST /api/superadmins/login
 
 Request Body :
 
@@ -74,7 +74,7 @@ Response Body (Failed) :
 
 ## Logout Superadmin
 
-Endpoint : DELETE /api/superadmin/current
+Endpoint : DELETE /api/superadmins/current
 
 Headers :
 
