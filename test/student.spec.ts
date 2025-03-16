@@ -14,8 +14,9 @@ describe('StudentController', () => {
   let httpServer: Server; // Tambahkan variabel untuk menyimpan HTTP server
 
   let testService: TestService;
+  let globalToken: string;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule, TestModule],
     }).compile();
@@ -23,19 +24,16 @@ describe('StudentController', () => {
     app = moduleFixture.createNestApplication();
     await app.init();
 
-    // Ambil logger dari nest-winston
     logger = app.get(WINSTON_MODULE_PROVIDER);
-
-    // Ambil HTTP server dengan tipe yang jelas
     httpServer = app.getHttpServer() as Server;
-
     testService = app.get(TestService);
+
+    // Login sekali saja untuk semua test
+    globalToken = await testService.login(httpServer);
   });
 
-  let token: string;
-
-  beforeEach(async () => {
-    token = await testService.login(httpServer);
+  afterAll(async () => {
+    await app.close();
   });
 
   describe('GET /api/student/:id', () => {
@@ -45,7 +43,7 @@ describe('StudentController', () => {
 
       const response = await request(httpServer)
         .get(`/api/student/${invalidUuid}`)
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', `Bearer ${globalToken}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
@@ -57,7 +55,7 @@ describe('StudentController', () => {
       const student = await testService.getUser();
       const response = await request(httpServer)
         .get(`/api/student/${student.id}`)
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', `Bearer ${globalToken}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
@@ -72,7 +70,7 @@ describe('StudentController', () => {
     it('should be able to get list student', async () => {
       const response = await request(httpServer)
         .get('/api/student/')
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', `Bearer ${globalToken}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
@@ -86,7 +84,7 @@ describe('StudentController', () => {
         .query({
           full_name: 'ah',
         })
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', `Bearer ${globalToken}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
@@ -100,7 +98,7 @@ describe('StudentController', () => {
         .query({
           full_name: 'wrong',
         })
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', `Bearer ${globalToken}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
@@ -114,7 +112,7 @@ describe('StudentController', () => {
         .query({
           nim: '205410084',
         })
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', `Bearer ${globalToken}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
@@ -128,7 +126,7 @@ describe('StudentController', () => {
         .query({
           nim: '205410079',
         })
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', `Bearer ${globalToken}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
@@ -143,7 +141,7 @@ describe('StudentController', () => {
           size: 1,
           page: 2,
         })
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', `Bearer ${globalToken}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
@@ -161,7 +159,7 @@ describe('StudentController', () => {
           size: 8,
           page: 2,
         })
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', `Bearer ${globalToken}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
@@ -175,7 +173,7 @@ describe('StudentController', () => {
     it('should use default pagination when not provided', async () => {
       const response = await request(httpServer)
         .get('/api/student/search')
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', `Bearer ${globalToken}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
