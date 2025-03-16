@@ -14,7 +14,7 @@ describe('StudentController', () => {
   let httpServer: Server; // Tambahkan variabel untuk menyimpan HTTP server
 
   let testService: TestService;
-  let globalToken: string;
+  let token: string;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -27,23 +27,25 @@ describe('StudentController', () => {
     logger = app.get(WINSTON_MODULE_PROVIDER);
     httpServer = app.getHttpServer() as Server;
     testService = app.get(TestService);
-
-    // Login sekali saja untuk semua test
-    globalToken = await testService.login(httpServer);
+    token = await testService.login(httpServer);
   });
 
   afterAll(async () => {
     await app.close();
   });
 
-  describe('GET /api/student/:id', () => {
+  describe('GET /api/students/:id', () => {
+    // beforeAll(async () => {
+    //   token = await testService.login(httpServer);
+    // });
+
     it('should be rejected if student is not found', async () => {
       // Using an invalid UUID that doesn't exist in the system
       const invalidUuid = '201dfe0a-adf3-442e-8c69-c709bd7aec14';
 
       const response = await request(httpServer)
-        .get(`/api/student/${invalidUuid}`)
-        .set('Authorization', `Bearer ${globalToken}`);
+        .get(`/api/students/${invalidUuid}`)
+        .set('Authorization', `Bearer ${token}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
@@ -54,8 +56,8 @@ describe('StudentController', () => {
     it('should be able to get student', async () => {
       const student = await testService.getUser();
       const response = await request(httpServer)
-        .get(`/api/student/${student.id}`)
-        .set('Authorization', `Bearer ${globalToken}`);
+        .get(`/api/students/${student.id}`)
+        .set('Authorization', `Bearer ${token}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
@@ -67,10 +69,14 @@ describe('StudentController', () => {
   });
 
   describe('GET /api/student', () => {
+    // beforeAll(async () => {
+    //   token = await testService.login(httpServer);
+    // });
+
     it('should be able to get list student', async () => {
       const response = await request(httpServer)
-        .get('/api/student/')
-        .set('Authorization', `Bearer ${globalToken}`);
+        .get('/api/students/')
+        .set('Authorization', `Bearer ${token}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
@@ -80,11 +86,11 @@ describe('StudentController', () => {
 
     it('should be able to search student by full_name', async () => {
       const response = await request(httpServer)
-        .get(`/api/student/search`)
+        .get(`/api/students/search`)
         .query({
           full_name: 'ah',
         })
-        .set('Authorization', `Bearer ${globalToken}`);
+        .set('Authorization', `Bearer ${token}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
@@ -94,11 +100,11 @@ describe('StudentController', () => {
 
     it('should be able to search student by full_name not found', async () => {
       const response = await request(httpServer)
-        .get(`/api/student/search`)
+        .get(`/api/students/search`)
         .query({
           full_name: 'wrong',
         })
-        .set('Authorization', `Bearer ${globalToken}`);
+        .set('Authorization', `Bearer ${token}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
@@ -108,11 +114,11 @@ describe('StudentController', () => {
 
     it('should be able to search student by nim', async () => {
       const response = await request(httpServer)
-        .get(`/api/student/search`)
+        .get(`/api/students/search`)
         .query({
           nim: '205410084',
         })
-        .set('Authorization', `Bearer ${globalToken}`);
+        .set('Authorization', `Bearer ${token}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
@@ -122,11 +128,11 @@ describe('StudentController', () => {
 
     it('should be able to search student by nim not found', async () => {
       const response = await request(httpServer)
-        .get(`/api/student/search`)
+        .get(`/api/students/search`)
         .query({
           nim: '205410079',
         })
-        .set('Authorization', `Bearer ${globalToken}`);
+        .set('Authorization', `Bearer ${token}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
@@ -136,12 +142,12 @@ describe('StudentController', () => {
 
     it('should be able to search student with page', async () => {
       const response = await request(httpServer)
-        .get(`/api/student/search`)
+        .get(`/api/students/search`)
         .query({
           size: 1,
           page: 2,
         })
-        .set('Authorization', `Bearer ${globalToken}`);
+        .set('Authorization', `Bearer ${token}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
@@ -154,12 +160,12 @@ describe('StudentController', () => {
 
     it('should be able to search student with page v2', async () => {
       const response = await request(httpServer)
-        .get(`/api/student/search`)
+        .get(`/api/students/search`)
         .query({
           size: 8,
           page: 2,
         })
-        .set('Authorization', `Bearer ${globalToken}`);
+        .set('Authorization', `Bearer ${token}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
@@ -172,8 +178,8 @@ describe('StudentController', () => {
 
     it('should use default pagination when not provided', async () => {
       const response = await request(httpServer)
-        .get('/api/student/search')
-        .set('Authorization', `Bearer ${globalToken}`);
+        .get('/api/students/search')
+        .set('Authorization', `Bearer ${token}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
