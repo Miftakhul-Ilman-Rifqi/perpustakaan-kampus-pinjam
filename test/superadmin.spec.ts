@@ -37,10 +37,10 @@ describe('SuperadminController', () => {
     await app.close();
   });
 
-  describe('POST /api/superadmin/login', () => {
+  describe('POST /api/superadmins/login', () => {
     it('should be rejected if request is empty', async () => {
       const response = await request(httpServer)
-        .post('/api/superadmin/login')
+        .post('/api/superadmins/login')
         .send({
           username: '',
           password: '',
@@ -54,7 +54,7 @@ describe('SuperadminController', () => {
 
     it('should be rejected if request is invalid', async () => {
       const response = await request(httpServer)
-        .post('/api/superadmin/login')
+        .post('/api/superadmins/login')
         .send({
           username: 'rif',
           password: 'perpus',
@@ -68,7 +68,7 @@ describe('SuperadminController', () => {
 
     it('should be able to login', async () => {
       const response = await request(httpServer)
-        .post('/api/superadmin/login')
+        .post('/api/superadmins/login')
         .send({
           username: 'rif123',
           password: 'perpuskampis',
@@ -83,10 +83,10 @@ describe('SuperadminController', () => {
     });
   });
 
-  describe('DELETE /api/superadmin/current', () => {
+  describe('DELETE /api/superadmins/current', () => {
     it('should be rejected if token is empty', async () => {
       const response = await request(httpServer)
-        .delete('/api/superadmin/current')
+        .delete('/api/superadmins/current')
         .set('Authorization', '');
 
       logger.info({ data: response.body as Record<string, string[]> });
@@ -97,7 +97,7 @@ describe('SuperadminController', () => {
 
     it('should be rejected if token is invalid', async () => {
       const response = await request(httpServer)
-        .delete('/api/superadmin/current')
+        .delete('/api/superadmins/current')
         .set('Authorization', 'Bearer eyJhb....GOdQ');
 
       logger.info({ data: response.body as Record<string, string[]> });
@@ -109,7 +109,7 @@ describe('SuperadminController', () => {
     it('should be able to logout user', async () => {
       // Lakukan logout
       const response = await request(httpServer)
-        .delete('/api/superadmin/current')
+        .delete('/api/superadmins/current')
         .set('Authorization', `Bearer ${token}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
