@@ -158,7 +158,11 @@ export class BookService {
   async list(): Promise<BookResponse[]> {
     try {
       return await this.prismaService.$transaction(async (prisma) => {
-        const books = await prisma.book.findMany({});
+        const books = await prisma.book.findMany({
+          orderBy: {
+            title: 'asc',
+          },
+        });
 
         return books.map((book) => this.toBookResponse(book));
       });
