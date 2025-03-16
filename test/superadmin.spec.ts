@@ -15,7 +15,26 @@ describe('SuperadminController', () => {
 
   let testService: TestService;
 
-  beforeEach(async () => {
+  let globalToken: string;
+
+  // beforeEach(async () => {
+  //   const moduleFixture: TestingModule = await Test.createTestingModule({
+  //     imports: [AppModule, TestModule],
+  //   }).compile();
+
+  //   app = moduleFixture.createNestApplication();
+  //   await app.init();
+
+  //   // Ambil logger dari nest-winston
+  //   logger = app.get(WINSTON_MODULE_PROVIDER);
+
+  //   // Ambil HTTP server dengan tipe yang jelas
+  //   httpServer = app.getHttpServer() as Server;
+
+  //   testService = app.get(TestService);
+  // });
+
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule, TestModule],
     }).compile();
@@ -23,13 +42,16 @@ describe('SuperadminController', () => {
     app = moduleFixture.createNestApplication();
     await app.init();
 
-    // Ambil logger dari nest-winston
     logger = app.get(WINSTON_MODULE_PROVIDER);
-
-    // Ambil HTTP server dengan tipe yang jelas
     httpServer = app.getHttpServer() as Server;
-
     testService = app.get(TestService);
+
+    // Login sekali saja untuk semua test
+    globalToken = await testService.login(httpServer);
+  });
+
+  afterAll(async () => {
+    await app.close();
   });
 
   describe('POST /api/superadmin/login', () => {
@@ -79,12 +101,6 @@ describe('SuperadminController', () => {
   });
 
   describe('DELETE /api/superadmin/current', () => {
-    let token: string;
-
-    beforeEach(async () => {
-      token = await testService.login(httpServer);
-    });
-
     it('should be rejected if token is empty', async () => {
       const response = await request(httpServer)
         .delete('/api/superadmin/current')
@@ -114,7 +130,7 @@ describe('SuperadminController', () => {
       // Lakukan logout
       const response = await request(httpServer)
         .delete('/api/superadmin/current')
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', `Bearer ${globalToken}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
