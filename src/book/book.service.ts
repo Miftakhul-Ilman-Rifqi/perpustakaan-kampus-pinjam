@@ -158,11 +158,7 @@ export class BookService {
   async list(): Promise<BookResponse[]> {
     try {
       return await this.prismaService.$transaction(async (prisma) => {
-        const books = await prisma.book.findMany({
-          orderBy: {
-            title: 'asc',
-          },
-        });
+        const books = await prisma.book.findMany({});
 
         return books.map((book) => this.toBookResponse(book));
       });
@@ -269,11 +265,7 @@ export class BookService {
         });
 
         return {
-          data: books.map((book) => ({
-            id: book.id,
-            title: book.title,
-            stock: book.stock,
-          })),
+          data: books.map((book) => this.toBookResponse(book)),
           paging: {
             current_page: searchRequest.page,
             size: searchRequest.size,
