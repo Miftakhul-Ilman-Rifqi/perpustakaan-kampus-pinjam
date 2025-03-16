@@ -18,7 +18,7 @@ import { WebResponse } from '../model/web.model';
 import { AbilitiesGuard } from '../common/casl/abilities.guard';
 import { CanManage, CheckAbilities } from '../common/casl/abilities.decorator';
 
-@Controller(`/api/student`)
+@Controller(`/api/students`)
 export class StudentController {
   constructor(private studentService: StudentService) {}
 
