@@ -10,8 +10,8 @@ import { TestModule } from './test.module';
 
 describe('BookController', () => {
   let app: INestApplication;
-  let logger: Logger; // Gunakan tipe Logger dari winston
-  let httpServer: Server; // Tambahkan variabel untuk menyimpan HTTP server
+  let logger: Logger;
+  let httpServer: Server;
 
   let testService: TestService;
   let token: string;
@@ -28,7 +28,6 @@ describe('BookController', () => {
     httpServer = app.getHttpServer() as Server;
     testService = app.get(TestService);
 
-    // Login sekali saja untuk semua test
     token = await testService.login(httpServer);
   });
 
@@ -85,7 +84,7 @@ describe('BookController', () => {
 
       logger.info({ data: response.body as Record<string, string[]> });
 
-      expect(response.status).toBe(409); // CONFLICT
+      expect(response.status).toBe(409);
       expect(response.body.errors).toBeDefined();
     });
   });
@@ -251,9 +250,8 @@ describe('BookController', () => {
     });
 
     it('should be able to get list of books', async () => {
-      // Tambahkan beberapa buku ke database
-      await testService.createBook(); // Buku AI
-      await testService.createBookV2(); // Buku Code
+      await testService.createBook();
+      await testService.createBookV2();
 
       const response = await request(httpServer)
         .get('/api/books')
@@ -265,7 +263,6 @@ describe('BookController', () => {
       expect(response.body.data).toBeInstanceOf(Array);
       expect(response.body.data.length).toBe(2);
 
-      // Verifikasi bahwa buku diurutkan berdasarkan judul
       expect(response.body.data[0].title).toBe('Buku AI');
       expect(response.body.data[1].title).toBe('Buku Code');
     });
