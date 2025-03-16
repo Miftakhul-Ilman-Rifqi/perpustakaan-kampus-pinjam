@@ -16,7 +16,7 @@ import { WebResponse } from '../model/web.model';
 import { AbilitiesGuard } from '../common/casl/abilities.guard';
 import { CanManage } from '../common/casl/abilities.decorator';
 
-@Controller(`/api/superadmin`)
+@Controller(`/api/superadmins`)
 export class SuperadminController {
   constructor(private superadminService: SuperadminService) {}
 
