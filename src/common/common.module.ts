@@ -134,7 +134,7 @@ export class CommonModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(AuthMiddleware)
-      .exclude({ path: 'api/superadmin/login', method: RequestMethod.POST })
+      .exclude({ path: 'api/superadmins/login', method: RequestMethod.POST })
       .forRoutes('/api/*');
   }
 }
