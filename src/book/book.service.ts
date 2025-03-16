@@ -92,10 +92,9 @@ export class BookService {
         return this.toBookResponse(book);
       });
     } catch (error) {
-      // Handle Prisma error
       if (error instanceof PrismaClientKnownRequestError) {
         switch (error.code) {
-          case 'P2025': // Not found (invalid ID)
+          case 'P2025':
             throw new HttpException('Book not found', HttpStatus.NOT_FOUND);
           default:
             break;
@@ -118,7 +117,6 @@ export class BookService {
 
     try {
       return await this.prismaService.$transaction(async (prisma) => {
-        // Update buku
         const book = await prisma.book.update({
           where: {
             id: updateRequest.id,
@@ -132,15 +130,14 @@ export class BookService {
         return this.toBookResponse(book);
       });
     } catch (error) {
-      // Handle Prisma error
       if (error instanceof PrismaClientKnownRequestError) {
         switch (error.code) {
-          case 'P2002': // Unique constraint (title already exists)
+          case 'P2002':
             throw new HttpException(
               'Book title already exists',
               HttpStatus.CONFLICT,
             );
-          case 'P2025': // Not found (invalid ID)
+          case 'P2025':
             throw new HttpException('Book not found', HttpStatus.NOT_FOUND);
           default:
             break;
@@ -192,7 +189,6 @@ export class BookService {
         return true;
       });
     } catch (error) {
-      // Handle Prisma error
       if (error instanceof PrismaClientKnownRequestError) {
         switch (error.code) {
           case 'P2003':
@@ -200,7 +196,7 @@ export class BookService {
               'Book has active loans',
               HttpStatus.BAD_REQUEST,
             );
-          case 'P2025': // Not found (invalid ID)
+          case 'P2025':
             throw new HttpException('Book not found', HttpStatus.NOT_FOUND);
           default:
             break;
@@ -250,7 +246,6 @@ export class BookService {
     }
 
     try {
-      // Using Prisma transaction for consistency
       return await this.prismaService.$transaction(async (prisma) => {
         const skip = (searchRequest.page - 1) * searchRequest.size;
 
