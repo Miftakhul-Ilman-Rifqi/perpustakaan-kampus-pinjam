@@ -14,8 +14,9 @@ describe('BookController', () => {
   let httpServer: Server; // Tambahkan variabel untuk menyimpan HTTP server
 
   let testService: TestService;
+  let globalToken: string;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule, TestModule],
     }).compile();
@@ -23,19 +24,16 @@ describe('BookController', () => {
     app = moduleFixture.createNestApplication();
     await app.init();
 
-    // Ambil logger dari nest-winston
     logger = app.get(WINSTON_MODULE_PROVIDER);
-
-    // Ambil HTTP server dengan tipe yang jelas
     httpServer = app.getHttpServer() as Server;
-
     testService = app.get(TestService);
+
+    // Login sekali saja untuk semua test
+    globalToken = await testService.login(httpServer);
   });
 
-  let token: string;
-
-  beforeEach(async () => {
-    token = await testService.login(httpServer);
+  afterAll(async () => {
+    await app.close();
   });
 
   describe('POST /api/books', () => {
@@ -46,7 +44,7 @@ describe('BookController', () => {
     it('should be rejected if request is invalid', async () => {
       const response = await request(httpServer)
         .post('/api/books')
-        .set('Authorization', `Bearer ${token}`)
+        .set('Authorization', `Bearer ${globalToken}`)
         .send({
           title: 3,
           stock: 'abc',
@@ -61,7 +59,7 @@ describe('BookController', () => {
     it('should be able to create book', async () => {
       const response = await request(httpServer)
         .post('/api/books')
-        .set('Authorization', `Bearer ${token}`)
+        .set('Authorization', `Bearer ${globalToken}`)
         .send({
           title: 'Buku AI',
           stock: 2,
@@ -79,7 +77,7 @@ describe('BookController', () => {
       await testService.createBook();
       const response = await request(httpServer)
         .post('/api/books')
-        .set('Authorization', `Bearer ${token}`)
+        .set('Authorization', `Bearer ${globalToken}`)
         .send({
           title: 'Buku AI',
           stock: 6,
@@ -102,7 +100,7 @@ describe('BookController', () => {
       const invalidUuid = '1a9ddd5c-4ed7-41ef-ba35-a862e2cedd05';
       const response = await request(httpServer)
         .get(`/api/books/${invalidUuid}`)
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', `Bearer ${globalToken}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
@@ -114,7 +112,7 @@ describe('BookController', () => {
       const book = await testService.getBook();
       const response = await request(httpServer)
         .get(`/api/books/${book!.id}`)
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', `Bearer ${globalToken}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
@@ -135,7 +133,7 @@ describe('BookController', () => {
       const book = await testService.getBook();
       const response = await request(httpServer)
         .patch(`/api/books/${book!.id}`)
-        .set('Authorization', `Bearer ${token}`)
+        .set('Authorization', `Bearer ${globalToken}`)
         .send({
           title: 'Buku Cerdas',
         });
@@ -152,7 +150,7 @@ describe('BookController', () => {
       const book = await testService.getBook();
       const response = await request(httpServer)
         .patch(`/api/books/${book!.id}`)
-        .set('Authorization', `Bearer ${token}`)
+        .set('Authorization', `Bearer ${globalToken}`)
         .send({
           stock: 4,
         });
@@ -169,7 +167,7 @@ describe('BookController', () => {
       const book = await testService.getBook();
       const response = await request(httpServer)
         .patch(`/api/books/${book!.id}`)
-        .set('Authorization', `Bearer ${token}`)
+        .set('Authorization', `Bearer ${globalToken}`)
         .send({
           title: 'Buku Serbaguna',
           stock: 10,
@@ -189,7 +187,7 @@ describe('BookController', () => {
 
       const response = await request(httpServer)
         .patch(`/api/books/${duplicateBook!.id}`)
-        .set('Authorization', `Bearer ${token}`)
+        .set('Authorization', `Bearer ${globalToken}`)
         .send({
           title: 'Buku Code',
           stock: 5,
@@ -204,7 +202,7 @@ describe('BookController', () => {
       const invalidUuid = '201dfe0a-adf3-442e-8c69-c709bd7aec14';
       const response = await request(httpServer)
         .patch(`/api/books/${invalidUuid}`)
-        .set('Authorization', `Bearer ${token}`)
+        .set('Authorization', `Bearer ${globalToken}`)
         .send({
           title: 'Buku Baru',
           stock: 3,
@@ -226,7 +224,7 @@ describe('BookController', () => {
       const book = await testService.getBook();
       const response = await request(httpServer)
         .delete(`/api/books/${book!.id}`)
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', `Bearer ${globalToken}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
@@ -238,7 +236,7 @@ describe('BookController', () => {
       const invalidUuid = '201dfe0a-adf3-442e-8c69-c709bd7aec14';
       const response = await request(httpServer)
         .delete(`/api/books/${invalidUuid}`)
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', `Bearer ${globalToken}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
@@ -259,7 +257,7 @@ describe('BookController', () => {
 
       const response = await request(httpServer)
         .get('/api/books')
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', `Bearer ${globalToken}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
@@ -275,7 +273,7 @@ describe('BookController', () => {
     it('should be able if no books are found', async () => {
       const response = await request(httpServer)
         .get('/api/books')
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', `Bearer ${globalToken}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
@@ -297,7 +295,7 @@ describe('BookController', () => {
         .query({
           id: `${book!.id}`,
         })
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', `Bearer ${globalToken}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
@@ -313,7 +311,7 @@ describe('BookController', () => {
         .query({
           id: invalidUuid,
         })
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', `Bearer ${globalToken}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
@@ -328,7 +326,7 @@ describe('BookController', () => {
         .query({
           title: 'Code',
         })
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', `Bearer ${globalToken}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
@@ -343,7 +341,7 @@ describe('BookController', () => {
         .query({
           title: '205410079',
         })
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', `Bearer ${globalToken}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
@@ -359,7 +357,7 @@ describe('BookController', () => {
           size: 1,
           page: 2,
         })
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', `Bearer ${globalToken}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
@@ -378,7 +376,7 @@ describe('BookController', () => {
           size: 8,
           page: 2,
         })
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', `Bearer ${globalToken}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
@@ -393,7 +391,7 @@ describe('BookController', () => {
       await testService.createBookMass();
       const response = await request(httpServer)
         .get('/api/books/search')
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', `Bearer ${globalToken}`);
 
       logger.info({ data: response.body as Record<string, string[]> });
 
