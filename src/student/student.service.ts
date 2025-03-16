@@ -15,6 +15,7 @@ import {
 } from '../model/student.model';
 import { StudentValidation } from './student.validation';
 import { Student } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 interface Filter {
   full_name?: { contains: string };
@@ -44,31 +45,50 @@ export class StudentService {
       request,
     ) as GetStudentRequest;
 
-    // Using Prisma transaction for safety
-    return await this.prismaService.$transaction(async (prisma) => {
-      const student = await prisma.student.findUnique({
-        where: { id: getRequest.id },
-      });
+    try {
+      return await this.prismaService.$transaction(async (prisma) => {
+        const student = await prisma.student.findUniqueOrThrow({
+          where: { id: getRequest.id },
+        });
 
-      if (!student) {
-        throw new HttpException('Student not found', HttpStatus.NOT_FOUND);
+        return this.toStudentResponse(student);
+      });
+    } catch (error) {
+      // Handle Prisma error
+      if (error instanceof PrismaClientKnownRequestError) {
+        switch (error.code) {
+          case 'P2025': // Not found (invalid ID)
+            throw new HttpException('Student not found', HttpStatus.NOT_FOUND);
+          default:
+            break;
+        }
       }
 
-      return this.toStudentResponse(student);
-    });
+      this.logger.error(`Failed to get student: ${error.message}`, error.stack);
+      throw new HttpException(
+        'Failed to get student',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async list(): Promise<StudentResponse[]> {
-    // Using Prisma transaction for consistency
-    return await this.prismaService.$transaction(async (prisma) => {
-      const students = await prisma.student.findMany();
+    try {
+      return await this.prismaService.$transaction(async (prisma) => {
+        const students = await prisma.student.findMany({});
 
-      if (students.length === 0) {
-        throw new HttpException('Data not found', HttpStatus.NOT_FOUND);
-      }
-
-      return students.map((student) => this.toStudentResponse(student));
-    });
+        return students.map((student) => this.toStudentResponse(student));
+      });
+    } catch (error) {
+      this.logger.error(
+        `Failed to list students: ${error.message}`,
+        error.stack,
+      );
+      throw new HttpException(
+        'Failed to list students',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async search(request: SearchStudentRequest): Promise<{
@@ -106,32 +126,43 @@ export class StudentService {
       });
     }
 
-    const skip = (searchRequest.page - 1) * searchRequest.size;
+    try {
+      // Using Prisma transaction for consistency
+      return await this.prismaService.$transaction(async (prisma) => {
+        const skip = (searchRequest.page - 1) * searchRequest.size;
 
-    // Using Prisma transaction for consistency
-    return await this.prismaService.$transaction(async (prisma) => {
-      const students = await prisma.student.findMany({
-        where: {
-          AND: filters,
-        },
-        take: searchRequest.size,
-        skip: skip,
+        const students = await prisma.student.findMany({
+          where: {
+            AND: filters,
+          },
+          take: searchRequest.size,
+          skip: skip,
+        });
+
+        const total = await prisma.student.count({
+          where: {
+            AND: filters,
+          },
+        });
+
+        return {
+          data: students.map((student) => this.toStudentResponse(student)),
+          paging: {
+            current_page: searchRequest.page,
+            size: searchRequest.size,
+            total_page: Math.ceil(total / searchRequest.size),
+          },
+        };
       });
-
-      const total = await prisma.student.count({
-        where: {
-          AND: filters,
-        },
-      });
-
-      return {
-        data: students.map((student) => this.toStudentResponse(student)),
-        paging: {
-          current_page: searchRequest.page,
-          size: searchRequest.size,
-          total_page: Math.ceil(total / searchRequest.size),
-        },
-      };
-    });
+    } catch (error) {
+      this.logger.error(
+        `Failed to search students: ${error.message}`,
+        error.stack,
+      );
+      throw new HttpException(
+        'Failed to search students',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }
