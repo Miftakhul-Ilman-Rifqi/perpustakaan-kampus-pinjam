@@ -10,8 +10,8 @@ import { TestModule } from './test.module';
 
 describe('StudentController', () => {
   let app: INestApplication;
-  let logger: Logger; // Gunakan tipe Logger dari winston
-  let httpServer: Server; // Tambahkan variabel untuk menyimpan HTTP server
+  let logger: Logger;
+  let httpServer: Server;
 
   let testService: TestService;
   let token: string;
@@ -35,12 +35,8 @@ describe('StudentController', () => {
   });
 
   describe('GET /api/students/:id', () => {
-    // beforeAll(async () => {
-    //   token = await testService.login(httpServer);
-    // });
-
     it('should be rejected if student is not found', async () => {
-      // Using an invalid UUID that doesn't exist in the system
+      logger.info('should be rejected if student is not found START');
       const invalidUuid = '201dfe0a-adf3-442e-8c69-c709bd7aec14';
 
       const response = await request(httpServer)
@@ -54,6 +50,7 @@ describe('StudentController', () => {
     });
 
     it('should be able to get student', async () => {
+      logger.info('should be able to get student START');
       const student = await testService.getUser();
       const response = await request(httpServer)
         .get(`/api/students/${student.id}`)
@@ -69,11 +66,8 @@ describe('StudentController', () => {
   });
 
   describe('GET /api/student', () => {
-    // beforeAll(async () => {
-    //   token = await testService.login(httpServer);
-    // });
-
     it('should be able to get list student', async () => {
+      logger.info('should be able to get list student START');
       const response = await request(httpServer)
         .get('/api/students/')
         .set('Authorization', `Bearer ${token}`);
@@ -85,6 +79,7 @@ describe('StudentController', () => {
     });
 
     it('should be able to search student by full_name', async () => {
+      logger.info('should be able to search student by full_name START');
       const response = await request(httpServer)
         .get(`/api/students/search`)
         .query({
@@ -99,6 +94,9 @@ describe('StudentController', () => {
     });
 
     it('should be able to search student by full_name not found', async () => {
+      logger.info(
+        'should be able to search student by full_name not found START',
+      );
       const response = await request(httpServer)
         .get(`/api/students/search`)
         .query({
@@ -113,6 +111,7 @@ describe('StudentController', () => {
     });
 
     it('should be able to search student by nim', async () => {
+      logger.info('should be able to search student by nim START');
       const response = await request(httpServer)
         .get(`/api/students/search`)
         .query({
@@ -127,6 +126,7 @@ describe('StudentController', () => {
     });
 
     it('should be able to search student by nim not found', async () => {
+      logger.info('should be able to search student by nim not found START');
       const response = await request(httpServer)
         .get(`/api/students/search`)
         .query({
@@ -141,6 +141,7 @@ describe('StudentController', () => {
     });
 
     it('should be able to search student with page', async () => {
+      logger.info('should be able to search student with page START');
       const response = await request(httpServer)
         .get(`/api/students/search`)
         .query({
@@ -159,6 +160,7 @@ describe('StudentController', () => {
     });
 
     it('should be able to search student with page v2', async () => {
+      logger.info('should be able to search student with page v2 START');
       const response = await request(httpServer)
         .get(`/api/students/search`)
         .query({
@@ -177,6 +179,7 @@ describe('StudentController', () => {
     });
 
     it('should use default pagination when not provided', async () => {
+      logger.info('should use default pagination when not provided START');
       const response = await request(httpServer)
         .get('/api/students/search')
         .set('Authorization', `Bearer ${token}`);
