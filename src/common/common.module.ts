@@ -108,7 +108,7 @@ ${divider}\n`;
           }
 
           // Default message
-          return `[${timestamp}] ${info.level}: ${
+          return `\n[${timestamp}] ${info.level}: ${
             isString(message) ? message : JSON.stringify(message, null, 2)
           }\n`;
         }),
