@@ -1,0 +1,48 @@
+@baseUrl = http://localhost:3000
+@contentType = application/json
+@accept = application/json
+
+### [1] Login - Empty Request (400 Bad Request)
+POST {{baseUrl}}/api/superadmins/login
+Content-Type: {{contentType}}
+Accept: {{accept}}
+
+{
+  "username": "",
+  "password": ""
+}
+
+### [2] Login - Invalid Credentials (401 Unauthorized)
+POST {{baseUrl}}/api/superadmins/login
+Content-Type: {{contentType}}
+Accept: {{accept}}
+
+{
+  "username": "rif",
+  "password": "perpus"
+}
+
+### [3] Login - Success (200 OK)
+# @name loginSuccess
+POST {{baseUrl}}/api/superadmins/login
+Content-Type: {{contentType}}
+Accept: {{accept}}
+
+{
+  "username": "rif123",
+  "password": "perpuskampis"
+}
+
+### [4] Logout - No Token (401 Unauthorized)
+DELETE {{baseUrl}}/api/superadmins/current
+Accept: {{accept}}
+
+### [5] Logout - Invalid Token (401 Unauthorized)
+DELETE {{baseUrl}}/api/superadmins/current
+Accept: {{accept}}
+Authorization: Bearer eyJhb....GOdQ
+
+### [6] Logout - Success (200 OK)
+DELETE {{baseUrl}}/api/superadmins/current
+Accept: {{accept}}
+Authorization: Bearer {{loginSuccess.response.body.data.token}}
