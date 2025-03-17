@@ -37,6 +37,7 @@ describe('SuperadminController', () => {
 
   describe('POST /api/superadmins/login', () => {
     it('should be rejected if request is empty', async () => {
+      logger.info('should be rejected if request is empty START');
       const response = await request(httpServer)
         .post('/api/superadmins/login')
         .send({
@@ -51,6 +52,7 @@ describe('SuperadminController', () => {
     });
 
     it('should be rejected if request is invalid', async () => {
+      logger.info('should be rejected if request is invalid START');
       const response = await request(httpServer)
         .post('/api/superadmins/login')
         .send({
@@ -65,6 +67,7 @@ describe('SuperadminController', () => {
     });
 
     it('should be able to login', async () => {
+      logger.info('should be able to login START');
       const response = await request(httpServer)
         .post('/api/superadmins/login')
         .send({
@@ -83,6 +86,7 @@ describe('SuperadminController', () => {
 
   describe('DELETE /api/superadmins/current', () => {
     it('should be rejected if token is empty', async () => {
+      logger.info('should be rejected if token is empty START');
       const response = await request(httpServer)
         .delete('/api/superadmins/current')
         .set('Authorization', '');
@@ -94,6 +98,7 @@ describe('SuperadminController', () => {
     });
 
     it('should be rejected if token is invalid', async () => {
+      logger.info('should be rejected if token is invalid START');
       const response = await request(httpServer)
         .delete('/api/superadmins/current')
         .set('Authorization', 'Bearer eyJhb....GOdQ');
@@ -105,6 +110,7 @@ describe('SuperadminController', () => {
     });
 
     it('should be able to logout user', async () => {
+      logger.info('should be able to logout user START');
       const response = await request(httpServer)
         .delete('/api/superadmins/current')
         .set('Authorization', `Bearer ${token}`);
