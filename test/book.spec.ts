@@ -29,9 +29,13 @@ describe('BookController', () => {
     testService = app.get(TestService);
 
     token = await testService.login(httpServer);
+    await testService.deleteAllLoans();
+    await testService.deleteAllBook();
   });
 
   afterAll(async () => {
+    await testService.deleteAllLoans();
+    await testService.deleteAllBook();
     await app.close();
   });
 
@@ -41,6 +45,7 @@ describe('BookController', () => {
     });
 
     it('should be rejected if request is invalid', async () => {
+      logger.info('should be rejected if request is invalid START');
       const response = await request(httpServer)
         .post('/api/books')
         .set('Authorization', `Bearer ${token}`)
@@ -48,14 +53,13 @@ describe('BookController', () => {
           title: 3,
           stock: 'abc',
         });
-
       logger.info({ data: response.body as Record<string, string[]> });
-
       expect(response.status).toBe(400);
       expect(response.body.errors).toBeDefined();
     });
 
     it('should be able to create book', async () => {
+      logger.info('should be able to create book START');
       const response = await request(httpServer)
         .post('/api/books')
         .set('Authorization', `Bearer ${token}`)
@@ -63,9 +67,7 @@ describe('BookController', () => {
           title: 'Buku AI',
           stock: 2,
         });
-
       logger.info({ data: response.body as Record<string, string[]> });
-
       expect(response.status).toBe(201);
       expect(response.body.data.id).toBeDefined();
       expect(response.body.data.title).toBe('Buku AI');
@@ -73,6 +75,7 @@ describe('BookController', () => {
     });
 
     it('should be rejected if book title already exists', async () => {
+      logger.info('should be rejected if book title already exists START');
       await testService.createBook();
       const response = await request(httpServer)
         .post('/api/books')
@@ -81,9 +84,7 @@ describe('BookController', () => {
           title: 'Buku AI',
           stock: 6,
         });
-
       logger.info({ data: response.body as Record<string, string[]> });
-
       expect(response.status).toBe(409);
       expect(response.body.errors).toBeDefined();
     });
@@ -96,25 +97,23 @@ describe('BookController', () => {
     });
 
     it('should be rejected if book is not found', async () => {
+      logger.info('should be rejected if book is not found START');
       const invalidUuid = '1a9ddd5c-4ed7-41ef-ba35-a862e2cedd05';
       const response = await request(httpServer)
         .get(`/api/books/${invalidUuid}`)
         .set('Authorization', `Bearer ${token}`);
-
       logger.info({ data: response.body as Record<string, string[]> });
-
       expect(response.status).toBe(404);
       expect(response.body.errors).toBeDefined();
     });
 
     it('should be able to get book', async () => {
+      logger.info('should be able to get book START');
       const book = await testService.getBook();
       const response = await request(httpServer)
         .get(`/api/books/${book!.id}`)
         .set('Authorization', `Bearer ${token}`);
-
       logger.info({ data: response.body as Record<string, string[]> });
-
       expect(response.status).toBe(200);
       expect(response.body.data.id).toBeDefined();
       expect(response.body.data.title).toBe('Buku AI');
@@ -129,6 +128,7 @@ describe('BookController', () => {
     });
 
     it('should be able to update title only', async () => {
+      logger.info('should be able to update title only START');
       const book = await testService.getBook();
       const response = await request(httpServer)
         .patch(`/api/books/${book!.id}`)
@@ -136,9 +136,7 @@ describe('BookController', () => {
         .send({
           title: 'Buku Cerdas',
         });
-
       logger.info({ data: response.body as Record<string, string[]> });
-
       expect(response.status).toBe(200);
       expect(response.body.data.id).toBe(book!.id);
       expect(response.body.data.title).toBe('Buku Cerdas');
@@ -146,6 +144,7 @@ describe('BookController', () => {
     });
 
     it('should be able to update stock only', async () => {
+      logger.info('should be able to update stock only START');
       const book = await testService.getBook();
       const response = await request(httpServer)
         .patch(`/api/books/${book!.id}`)
@@ -153,9 +152,7 @@ describe('BookController', () => {
         .send({
           stock: 4,
         });
-
       logger.info({ data: response.body as Record<string, string[]> });
-
       expect(response.status).toBe(200);
       expect(response.body.data.id).toBe(book!.id);
       expect(response.body.data.title).toBe(book!.title);
@@ -163,6 +160,7 @@ describe('BookController', () => {
     });
 
     it('should be able to update title and stock', async () => {
+      logger.info('should be able to update title and stock START');
       const book = await testService.getBook();
       const response = await request(httpServer)
         .patch(`/api/books/${book!.id}`)
@@ -171,9 +169,7 @@ describe('BookController', () => {
           title: 'Buku Serbaguna',
           stock: 10,
         });
-
       logger.info({ data: response.body as Record<string, string[]> });
-
       expect(response.status).toBe(200);
       expect(response.body.data.id).toBe(book!.id);
       expect(response.body.data.title).toBe('Buku Serbaguna');
@@ -181,9 +177,9 @@ describe('BookController', () => {
     });
 
     it('should be rejected if book title already exists', async () => {
+      logger.info('should be rejected if book title already exists START');
       await testService.createBookV2();
       const duplicateBook = await testService.getBook();
-
       const response = await request(httpServer)
         .patch(`/api/books/${duplicateBook!.id}`)
         .set('Authorization', `Bearer ${token}`)
@@ -191,13 +187,12 @@ describe('BookController', () => {
           title: 'Buku Code',
           stock: 5,
         });
-
       logger.info({ data: response.body as Record<string, string[]> });
-
       expect(response.status).toBe(409);
     });
 
     it('should be rejected if book does not exist', async () => {
+      logger.info('should be rejected if book does not exist START');
       const invalidUuid = '201dfe0a-adf3-442e-8c69-c709bd7aec14';
       const response = await request(httpServer)
         .patch(`/api/books/${invalidUuid}`)
@@ -206,9 +201,7 @@ describe('BookController', () => {
           title: 'Buku Baru',
           stock: 3,
         });
-
       logger.info({ data: response.body as Record<string, string[]> });
-
       expect(response.status).toBe(404);
     });
   });
@@ -220,25 +213,23 @@ describe('BookController', () => {
     });
 
     it('should be able to remove book', async () => {
+      logger.info('should be able to remove book START');
       const book = await testService.getBook();
       const response = await request(httpServer)
         .delete(`/api/books/${book!.id}`)
         .set('Authorization', `Bearer ${token}`);
-
       logger.info({ data: response.body as Record<string, string[]> });
-
       expect(response.status).toBe(200);
       expect(response.body.data).toBe(true);
     });
 
     it('should be rejected if book does not exist', async () => {
+      logger.info('should be rejected if book does not exist START');
       const invalidUuid = '201dfe0a-adf3-442e-8c69-c709bd7aec14';
       const response = await request(httpServer)
         .delete(`/api/books/${invalidUuid}`)
         .set('Authorization', `Bearer ${token}`);
-
       logger.info({ data: response.body as Record<string, string[]> });
-
       expect(response.status).toBe(404);
       expect(response.body.errors).toBeDefined();
     });
@@ -250,30 +241,26 @@ describe('BookController', () => {
     });
 
     it('should be able to get list of books', async () => {
+      logger.info('should be able to get list of books START');
       await testService.createBook();
       await testService.createBookV2();
-
       const response = await request(httpServer)
         .get('/api/books')
         .set('Authorization', `Bearer ${token}`);
-
       logger.info({ data: response.body as Record<string, string[]> });
-
       expect(response.status).toBe(200);
       expect(response.body.data).toBeInstanceOf(Array);
       expect(response.body.data.length).toBe(2);
-
       expect(response.body.data[0].title).toBe('Buku AI');
       expect(response.body.data[1].title).toBe('Buku Code');
     });
 
     it('should be able if no books are found', async () => {
+      logger.info('should be able if no books are found START');
       const response = await request(httpServer)
         .get('/api/books')
         .set('Authorization', `Bearer ${token}`);
-
       logger.info({ data: response.body as Record<string, string[]> });
-
       expect(response.status).toBe(200);
       expect(response.body.data).toBeDefined();
     });
@@ -285,6 +272,7 @@ describe('BookController', () => {
     });
 
     it('should be able to search books by id', async () => {
+      logger.info('should be able to search books by id START');
       await testService.createBook();
       const book = await testService.getBook();
       const response = await request(httpServer)
@@ -293,14 +281,13 @@ describe('BookController', () => {
           id: `${book!.id}`,
         })
         .set('Authorization', `Bearer ${token}`);
-
       logger.info({ data: response.body as Record<string, string[]> });
-
       expect(response.status).toBe(200);
       expect(response.body.data.length).toBe(1);
     });
 
     it('should be able to search books by id not found', async () => {
+      logger.info('should be able to search books by id not found START');
       await testService.createBookV2();
       const invalidUuid = '1a9ddd5c-4ed7-41ef-ba35-a862e2cedd05';
       const response = await request(httpServer)
@@ -309,14 +296,13 @@ describe('BookController', () => {
           id: invalidUuid,
         })
         .set('Authorization', `Bearer ${token}`);
-
       logger.info({ data: response.body as Record<string, string[]> });
-
       expect(response.status).toBe(200);
       expect(response.body.data.length).toBe(0);
     });
 
     it('should be able to search books by title', async () => {
+      logger.info('should be able to search books by title START');
       await testService.createBookV2();
       const response = await request(httpServer)
         .get(`/api/books/search`)
@@ -324,14 +310,13 @@ describe('BookController', () => {
           title: 'Code',
         })
         .set('Authorization', `Bearer ${token}`);
-
       logger.info({ data: response.body as Record<string, string[]> });
-
       expect(response.status).toBe(200);
       expect(response.body.data.length).toBe(1);
     });
 
     it('should be able to search books by title not found', async () => {
+      logger.info('should be able to search books by title not found START');
       await testService.createBookV2();
       const response = await request(httpServer)
         .get(`/api/books/search`)
@@ -339,14 +324,13 @@ describe('BookController', () => {
           title: '205410079',
         })
         .set('Authorization', `Bearer ${token}`);
-
       logger.info({ data: response.body as Record<string, string[]> });
-
       expect(response.status).toBe(200);
       expect(response.body.data.length).toBe(0);
     });
 
     it('should be able to search books with page', async () => {
+      logger.info('should be able to search books with page START');
       await testService.createBookMass();
       const response = await request(httpServer)
         .get(`/api/books/search`)
@@ -355,9 +339,7 @@ describe('BookController', () => {
           page: 2,
         })
         .set('Authorization', `Bearer ${token}`);
-
       logger.info({ data: response.body as Record<string, string[]> });
-
       expect(response.status).toBe(200);
       expect(response.body.data.length).toBe(1);
       expect(response.body.paging.current_page).toBe(2);
@@ -366,6 +348,7 @@ describe('BookController', () => {
     });
 
     it('should be able to search books with page v2', async () => {
+      logger.info('should be able to search books with page v2 START');
       await testService.createBookMass();
       const response = await request(httpServer)
         .get(`/api/books/search`)
@@ -374,9 +357,7 @@ describe('BookController', () => {
           page: 2,
         })
         .set('Authorization', `Bearer ${token}`);
-
       logger.info({ data: response.body as Record<string, string[]> });
-
       expect(response.status).toBe(200);
       expect(response.body.data.length).toBe(7);
       expect(response.body.paging.current_page).toBe(2);
@@ -385,13 +366,12 @@ describe('BookController', () => {
     });
 
     it('should use default pagination when not provided', async () => {
+      logger.info('should use default pagination when not provided START');
       await testService.createBookMass();
       const response = await request(httpServer)
         .get('/api/books/search')
         .set('Authorization', `Bearer ${token}`);
-
       logger.info({ data: response.body as Record<string, string[]> });
-
       expect(response.status).toBe(200);
       expect(response.body.paging.current_page).toBe(1);
       expect(response.body.paging.size).toBe(10);
