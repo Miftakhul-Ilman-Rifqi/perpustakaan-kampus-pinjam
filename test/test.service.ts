@@ -49,6 +49,7 @@ export class TestService {
   }
 
   async deleteAllBook() {
+    await this.prismaService.loan.deleteMany({});
     await this.prismaService.book.deleteMany({});
   }
 
