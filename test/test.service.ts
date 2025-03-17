@@ -127,7 +127,6 @@ export class TestService {
       });
     }
 
-    // Create books in a transaction to prevent conflicts
     await this.prismaService.$transaction(
       books.map((book) =>
         this.prismaService.book.create({
@@ -142,13 +141,11 @@ export class TestService {
     return true;
   }
 
-  // Tambahkan fungsi-fungsi untuk pengujian Loan
   async deleteAllLoans() {
     await this.prismaService.loan.deleteMany({});
   }
 
   async createLoan() {
-    // Mengambil student dengan NIM dari database yang sudah di-seed
     const student = await this.prismaService.student.findFirst();
 
     if (!student) {
@@ -163,7 +160,6 @@ export class TestService {
       throw new Error('Book not found, make sure to create a book first');
     }
 
-    // Pastikan book memiliki stock
     await this.prismaService.book.update({
       where: { id: book.id },
       data: { stock: 5 },
@@ -204,7 +200,6 @@ export class TestService {
   }
 
   async createLoanMass() {
-    // Mengambil semua student dari database yang sudah di-seed
     const students = await this.prismaService.student.findMany({
       take: 5,
     });
@@ -215,7 +210,6 @@ export class TestService {
       );
     }
 
-    // Mengambil books yang sudah dibuat sebelumnya
     const books = await this.prismaService.book.findMany({
       take: 2,
     });
@@ -224,7 +218,6 @@ export class TestService {
       throw new Error('No books found, make sure to create books first');
     }
 
-    // Create loans untuk kombinasi student dan book
     const loans: { studentId: string; bookId: string; status: string }[] = [];
     for (let i = 0; i < 5; i++) {
       const student = students[i % students.length];
@@ -237,7 +230,6 @@ export class TestService {
       });
     }
 
-    // Create loans in a transaction to prevent conflicts
     await this.prismaService.$transaction(
       loans.map((loan) =>
         this.prismaService.loan.create({
@@ -251,112 +243,4 @@ export class TestService {
 
     return true;
   }
-
-  // // Tambahkan fungsi-fungsi untuk pengujian Loan
-  // async deleteAllLoans() {
-  //   await this.prismaService.loan.deleteMany({});
-  // }
-
-  // async createLoan() {
-  //   const student = await this.prismaService.student.findFirst({
-  //     where: {
-  //       nim: '205410080',
-  //     },
-  //   });
-
-  //   if (!student) {
-  //     throw new Error(
-  //       'Student not found, make sure to create a student with NIM 205410080',
-  //     );
-  //   }
-
-  //   const book = await this.getBook();
-
-  //   return await this.prismaService.loan.create({
-  //     data: {
-  //       studentId: student.id,
-  //       bookId: book!.id,
-  //       status: 'APPROVED',
-  //     },
-  //   });
-  // }
-
-  // async getLoan() {
-  //   const loan = await this.prismaService.loan.findFirst({
-  //     orderBy: {
-  //       createdAt: 'desc',
-  //     },
-  //   });
-
-  //   if (!loan) {
-  //     throw new Error('Loan not found');
-  //   }
-
-  //   return loan;
-  // }
-
-  // async updateBookStock(bookId: string, stock: number) {
-  //   return await this.prismaService.book.update({
-  //     where: {
-  //       id: bookId,
-  //     },
-  //     data: {
-  //       stock,
-  //     },
-  //   });
-  // }
-
-  // async createLoanMass() {
-  //   // Create multiple students if they don't exist
-  //   const students: {
-  //     nim: string;
-  //     id: string;
-  //     createdAt: Date;
-  //     updatedAt: Date;
-  //     full_name: string;
-  //   }[] = [];
-
-  //   for (let i = 1; i <= 5; i++) {
-  //     const nim = `20541008${i}`;
-  //     let student = await this.prismaService.student.findUnique({
-  //       where: { nim },
-  //     });
-
-  //     if (!student) {
-  //       student = await this.prismaService.student.create({
-  //         data: {
-  //           nim,
-  //           full_name: `Mahasiswa ${i}`,
-  //         },
-  //       });
-  //     }
-
-  //     students.push(student);
-  //   }
-
-  //   // Create books if needed
-  //   await this.createBookV3();
-  //   await this.createBookV4();
-
-  //   const books = await this.prismaService.book.findMany({
-  //     take: 2,
-  //   });
-
-  //   // Create loans
-  //   for (let i = 0; i < 5; i++) {
-  //     const student = students[i % students.length];
-  //     const book = books[i % books.length];
-
-  //     // Create loan
-  //     await this.prismaService.loan.create({
-  //       data: {
-  //         studentId: student.id,
-  //         bookId: book.id,
-  //         status: i % 3 === 0 ? 'RETURNED' : 'APPROVED',
-  //       },
-  //     });
-  //   }
-
-  //   return true;
-  // }
 }
