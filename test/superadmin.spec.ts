@@ -10,13 +10,12 @@ import { TestModule } from './test.module';
 
 describe('SuperadminController', () => {
   let app: INestApplication;
-  let logger: Logger; // Gunakan tipe Logger dari winston
-  let httpServer: Server; // Tambahkan variabel untuk menyimpan HTTP server
+  let logger: Logger;
+  let httpServer: Server;
 
   let testService: TestService;
   let token: string;
 
-  // Setup aplikasi sekali untuk semua test
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule, TestModule],
@@ -32,7 +31,6 @@ describe('SuperadminController', () => {
     token = await testService.login(httpServer);
   });
 
-  // Tutup aplikasi setelah semua test selesai
   afterAll(async () => {
     await app.close();
   });
@@ -107,7 +105,6 @@ describe('SuperadminController', () => {
     });
 
     it('should be able to logout user', async () => {
-      // Lakukan logout
       const response = await request(httpServer)
         .delete('/api/superadmins/current')
         .set('Authorization', `Bearer ${token}`);
