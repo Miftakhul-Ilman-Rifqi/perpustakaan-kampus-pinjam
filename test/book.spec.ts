@@ -208,6 +208,7 @@ describe('BookController', () => {
 
   describe('DELETE /api/books/:id', () => {
     beforeEach(async () => {
+      await testService.deleteAllLoans();
       await testService.deleteAllBook();
       await testService.createBook();
     });
@@ -232,6 +233,22 @@ describe('BookController', () => {
       logger.info({ data: response.body as Record<string, string[]> });
       expect(response.status).toBe(404);
       expect(response.body.errors).toBeDefined();
+    });
+
+    it('should be rejected if book has active loans', async () => {
+      logger.info('should be rejected if book has active loans START');
+      const book = await testService.getBook();
+
+      await testService.createLoan();
+
+      const response = await request(httpServer)
+        .delete(`/api/books/${book!.id}`)
+        .set('Authorization', `Bearer ${token}`);
+
+      logger.info({ data: response.body as Record<string, string[]> });
+      expect(response.status).toBe(400);
+      expect(response.body.errors).toBeDefined();
+      expect(response.body.errors).toBe('Book has active loans');
     });
   });
 
