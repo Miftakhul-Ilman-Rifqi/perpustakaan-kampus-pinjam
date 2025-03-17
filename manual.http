@@ -46,3 +46,133 @@ Authorization: Bearer eyJhb....GOdQ
 DELETE {{baseUrl}}/api/superadmins/current
 Accept: {{accept}}
 Authorization: Bearer {{loginSuccess.response.body.data.token}}
+
+### [7] Get Student - Student Not Found (404)
+# Menggunakan UUID yang tidak valid
+GET {{baseUrl}}/api/students/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee
+Authorization: Bearer {{loginSuccess.response.body.data.token}}
+Accept: {{accept}}
+
+> {%
+  client.test("Student not found response", function() {
+    client.assert(response.status === 404, "Harus return 404 untuk student tidak ada");
+    client.assert(response.body.errors, "Response harus mengandung error message");
+  });
+%}
+
+### [8] Prepare: Get Valid Student ID
+# @name getFirstStudent
+GET {{baseUrl}}/api/students/search?size=1
+Authorization: Bearer {{loginSuccess.response.body.data.token}}
+Accept: {{accept}}
+
+> {%
+  client.test("Prepare student ID", function() {
+    client.assert(response.status === 200, "Harus sukses mendapatkan student");
+    client.global(response.body.data[0].id);
+    client.global(response.body.data[0].nim);
+    client.global(response.body.data[0].full_name);
+  });
+%}
+
+### [9] Get Student - Valid ID (200)
+GET {{baseUrl}}/api/students/{{getFirstStudent.response.body.data[0].id}}
+Authorization: Bearer {{loginSuccess.response.body.data.token}}
+Accept: {{accept}}
+
+> {%
+  client.test("Get valid student", function() {
+    client.assert(response.status === 200, "Harus return 200 untuk student yang valid");
+    client.assert(response.body.data.id === client.global.get("student_id"));
+    client.assert(response.body.data.nim === client.global.get("student_nim"));
+    client.assert(response.body.data.full_name === client.global.get("student_name"));
+  });
+%}
+
+### [10] List Students - Full List (200)
+GET {{baseUrl}}/api/students
+Authorization: Bearer {{loginSuccess.response.body.data.token}}
+Accept: {{accept}}
+
+> {%
+  client.test("List all students", function() {
+    client.assert(response.status === 200, "Harus return 200");
+    client.assert(response.body.data.length === 15, "Harus ada 15 student");
+  });
+%}
+
+### [11] Search Students - By Name (Partial)
+# Mengasumsikan ada 3 student dengan mengandung 'ah' di nama
+GET {{baseUrl}}/api/students/search?full_name=ah
+Authorization: Bearer {{loginSuccess.response.body.data.token}}
+Accept: {{accept}}
+
+> {%
+  client.test("Search by name partial", function() {
+    client.assert(response.status === 200, "Harus return 200");
+    client.assert(response.body.data.length === 3, "Harus ada 3 hasil pencarian");
+  });
+%}
+
+### [12] Search Students - Name Not Found
+GET {{baseUrl}}/api/students/search?full_name=namaTidakValid123
+Authorization: Bearer {{loginSuccess.response.body.data.token}}
+Accept: {{accept}}
+
+> {%
+  client.test("Search invalid name", function() {
+    client.assert(response.status === 200, "Tetap return 200 meski tidak ada hasil");
+    client.assert(response.body.data.length === 0, "Harus return array kosong");
+  });
+%}
+
+### [13] Search Students - By Valid NIM
+GET {{baseUrl}}/api/students/search?nim={{getFirstStudent.response.body.data[0].nim}}
+Authorization: Bearer {{loginSuccess.response.body.data.token}}
+Accept: {{accept}}
+
+> {%
+  client.test("Search by valid NIM", function() {
+    client.assert(response.status === 200);
+    client.assert(response.body.data.length === 1, "Harus ada 1 hasil");
+    client.assert(response.body.data[0].nim === client.global.get("student_nim"));
+  });
+%}
+
+### [14] Search Students - Invalid NIM
+GET {{baseUrl}}/api/students/search?nim=0000000001
+Authorization: Bearer {{loginSuccess.response.body.data.token}}
+Accept: {{accept}}
+
+> {%
+  client.test("Search invalid NIM", function() {
+    client.assert(response.status === 200);
+    client.assert(response.body.data.length === 0, "Harus tidak ada hasil");
+  });
+%}
+
+### [15] Pagination Test - Custom Page Size
+GET {{baseUrl}}/api/students/search?size=5&page=2
+Authorization: Bearer {{loginSuccess.response.body.data.token}}
+Accept: {{accept}}
+
+> {%
+  client.test("Test pagination parameters", function() {
+    client.assert(response.status === 200);
+    client.assert(response.body.paging.size === 5, "Page size harus 5");
+    client.assert(response.body.paging.current_page === 2, "Current page harus 2");
+  });
+%}
+
+### [16] Default Pagination
+GET {{baseUrl}}/api/students/search
+Authorization: Bearer {{loginSuccess.response.body.data.token}}
+Accept: {{accept}}
+
+> {%
+  client.test("Test default pagination", function() {
+    client.assert(response.status === 200);
+    client.assert(response.body.paging.size === 10, "Default page size harus 10");
+    client.assert(response.body.paging.current_page === 1, "Default page harus 1");
+  });
+%}
