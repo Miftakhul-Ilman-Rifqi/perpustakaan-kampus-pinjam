@@ -25,9 +25,11 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { SkipThrottle } from '../common/throttler/throttler.decorator';
 
 @ApiTags('Student')
 @Controller(`/api/students`)
+@SkipThrottle(false)
 export class StudentController {
   constructor(private studentService: StudentService) {}
 
