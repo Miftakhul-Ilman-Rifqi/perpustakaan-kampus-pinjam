@@ -4,6 +4,29 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { Paging, WebResponse } from './model/web.model';
+import {
+  //   CreateStudentRequest,
+  //   GetStudentRequest,
+  //   SearchStudentRequest,
+  StudentResponse,
+} from './model/student.model';
+import {
+  BookResponse,
+  //   CreateBookRequest,
+  //   GetBookRequest,
+  //   RemoveBookRequest,
+  //   SearchBookRequest,
+  //   UpdateBookRequest,
+} from './model/book.model';
+import {
+  //   CreateLoanRequest,
+  //   GetLoanRequest,
+  LoanResponse,
+  //   RemoveLoanRequest,
+  //   SearchLoanRequest,
+  //   UpdateLoanRequest,
+} from './model/loan.model';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -38,8 +61,33 @@ async function bootstrap() {
     )
     .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api-docs', app, document);
+  const document = SwaggerModule.createDocument(app, config, {
+    extraModels: [
+      //   CreateStudentRequest,
+      //   GetStudentRequest,
+      //   SearchStudentRequest,
+      StudentResponse,
+      BookResponse,
+      //   CreateBookRequest,
+      //   GetBookRequest,
+      //   RemoveBookRequest,
+      //   SearchBookRequest,
+      //   UpdateBookRequest,
+      //   CreateLoanRequest,
+      //   GetLoanRequest,
+      LoanResponse,
+      //   RemoveLoanRequest,
+      //   SearchLoanRequest,
+      //   UpdateLoanRequest,
+      Paging,
+      WebResponse,
+    ],
+  });
+  SwaggerModule.setup('api-docs', app, document, {
+    swaggerOptions: {
+      defaultModelsExpandDepth: -1, // This will hide the schemas section
+    },
+  });
 
   await app.listen(process.env.PORT ?? 3000);
 }
