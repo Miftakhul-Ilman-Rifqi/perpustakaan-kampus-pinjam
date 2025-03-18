@@ -34,9 +34,11 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { SkipThrottle } from '../common/throttler/throttler.decorator';
 
 @ApiTags('Book')
 @Controller(`/api/books`)
+@SkipThrottle(false)
 export class BookController {
   constructor(private bookService: BookService) {}
 
