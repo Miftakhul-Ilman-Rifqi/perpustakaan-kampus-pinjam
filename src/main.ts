@@ -27,6 +27,7 @@ import {
   //   SearchLoanRequest,
   //   UpdateLoanRequest,
 } from './model/loan.model';
+import { ThrottlerExceptionFilter } from './common/throttler/throttler.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -39,6 +40,9 @@ async function bootstrap() {
   ) {
     throw new Error('JWT keys not configured');
   }
+
+  // Menambahkan filter untuk throttler exception
+  app.useGlobalFilters(new ThrottlerExceptionFilter());
 
   const logger: Logger = app.get(WINSTON_MODULE_NEST_PROVIDER);
   app.useLogger(logger);
