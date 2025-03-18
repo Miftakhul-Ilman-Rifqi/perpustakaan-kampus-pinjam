@@ -36,9 +36,11 @@ import {
   ApiTags,
   // getSchemaPath,
 } from '@nestjs/swagger';
+import { SkipThrottle } from '../common/throttler/throttler.decorator';
 
 @ApiTags('Loan')
 @Controller(`/api/loans`)
+@SkipThrottle(false)
 export class LoanController {
   constructor(private loanService: LoanService) {}
 
