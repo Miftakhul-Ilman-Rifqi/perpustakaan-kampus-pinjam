@@ -31,11 +31,16 @@ import { ThrottlerExceptionFilter } from './common/throttler/throttler.filter';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { NextFunction, Request, Response } from 'express';
 import * as swaggerUi from 'swagger-ui-express';
+import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // app.enableCors();
+
+  app.useStaticAssets(join(__dirname, '..', 'node_modules/swagger-ui-dist'), {
+    prefix: '/swagger-ui/',
+  });
 
   // Redirect root ke /api-docs
   app.use((req: Request, res: Response, next: NextFunction) => {
