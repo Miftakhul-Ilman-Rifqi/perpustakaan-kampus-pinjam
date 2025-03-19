@@ -96,10 +96,13 @@ async function bootstrap() {
     },
   });
 
-  // Serve static assets untuk Swagger UI
-  app.useStaticAssets(join(__dirname, '../../node_modules/swagger-ui-dist'), {
-    prefix: '/api-docs',
-  });
+  // // Serve static assets untuk Swagger UI
+  // app.useStaticAssets(join(__dirname, '../../node_modules/swagger-ui-dist'), {
+  //   prefix: '/api-docs',
+  // });
+
+  // Konfigurasi static files
+  app.useStaticAssets(join(__dirname, '..', 'public'));
 
   // Redirect root ke /api-docs
   app.use((req: Request, res: Response, next: NextFunction) => {
