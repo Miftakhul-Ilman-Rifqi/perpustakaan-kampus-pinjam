@@ -8,7 +8,7 @@ import {
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import { PrismaService } from './prisma.service';
 import { ValidationService } from './validation.service';
 import { ErrorFilter } from './error.filter';
