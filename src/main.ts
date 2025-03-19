@@ -29,11 +29,25 @@ import {
 } from './model/loan.model';
 import { ThrottlerExceptionFilter } from './common/throttler/throttler.filter';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { join } from 'path';
 import { NextFunction, Request, Response } from 'express';
+// import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // app.useStaticAssets(join(__dirname, '../../node_modules/swagger-ui-dist'), {
+  //   prefix: '/api-docs', // Path akses di browser
+  //   index: false, // Nonaktifkan index.html
+  //   redirect: false, // Matikan auto-redirect
+  // });
+
+  // Redirect root ke /api-docs
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    if (req.url === '/') {
+      return res.redirect('/api-docs');
+    }
+    next();
+  });
 
   // Validasi env variables
   const configService = app.get(ConfigService);
@@ -94,22 +108,6 @@ async function bootstrap() {
     swaggerOptions: {
       defaultModelsExpandDepth: -1, // This will hide the schemas section
     },
-  });
-
-  // // Serve static assets untuk Swagger UI
-  // app.useStaticAssets(join(__dirname, '../../node_modules/swagger-ui-dist'), {
-  //   prefix: '/api-docs',
-  // });
-
-  // Konfigurasi static files
-  app.useStaticAssets(join(__dirname, '..', 'public'));
-
-  // Redirect root ke /api-docs
-  app.use((req: Request, res: Response, next: NextFunction) => {
-    if (req.url === '/') {
-      res.redirect('/api-docs');
-    }
-    next();
   });
 
   await app.listen(process.env.PORT ?? 3000);
