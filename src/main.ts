@@ -104,9 +104,17 @@ async function bootstrap() {
       WebResponse,
     ],
   });
+
   SwaggerModule.setup('api-docs', app, document, {
     swaggerOptions: {
       defaultModelsExpandDepth: -1, // This will hide the schemas section
+      persistAuthorization: true,
+      customCssUrl:
+        'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.20.1/swagger-ui.min.css',
+      customJsUrl: [
+        'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.20.1/swagger-ui-bundle.min.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.20.1/swagger-ui-standalone-preset.min.js',
+      ],
     },
   });
 
