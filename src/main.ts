@@ -30,16 +30,16 @@ import {
 import { ThrottlerExceptionFilter } from './common/throttler/throttler.filter';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { NextFunction, Request, Response } from 'express';
-// import { join } from 'path';
+import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  // app.useStaticAssets(join(__dirname, '../../node_modules/swagger-ui-dist'), {
-  //   prefix: '/api-docs', // Path akses di browser
-  //   index: false, // Nonaktifkan index.html
-  //   redirect: false, // Matikan auto-redirect
-  // });
+  app.useStaticAssets(join(__dirname, '../../node_modules/swagger-ui-dist'), {
+    prefix: '/api-docs', // Path akses di browser
+    index: false, // Nonaktifkan index.html
+    redirect: false, // Matikan auto-redirect
+  });
 
   // Redirect root ke /api-docs
   app.use((req: Request, res: Response, next: NextFunction) => {
