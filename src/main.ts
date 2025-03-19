@@ -34,7 +34,7 @@ import { NextFunction, Request, Response } from 'express';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  app.enableCors();
+  // app.enableCors();
 
   // Redirect root ke /api-docs
   app.use((req: Request, res: Response, next: NextFunction) => {
