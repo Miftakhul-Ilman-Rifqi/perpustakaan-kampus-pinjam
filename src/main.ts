@@ -30,6 +30,7 @@ import {
 import { ThrottlerExceptionFilter } from './common/throttler/throttler.filter';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { NextFunction, Request, Response } from 'express';
+import * as swaggerUi from 'swagger-ui-express';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -100,17 +101,28 @@ async function bootstrap() {
     ],
   });
 
-  SwaggerModule.setup('api-docs', app, document, {
-    swaggerOptions: {
-      defaultModelsExpandDepth: -1, // This will hide the schemas section
-    },
-    // customCssUrl:
-    //   'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.20.1/swagger-ui.min.css',
-    // customJs: [
-    //   'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.20.1/swagger-ui-bundle.js',
-    //   'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.20.1/swagger-ui-standalone-preset.js',
-    // ],
-  });
+  // SwaggerModule.setup('api-docs', app, document, {
+  //   swaggerOptions: {
+  //     defaultModelsExpandDepth: -1, // This will hide the schemas section
+  //   },
+  //   // customCssUrl:
+  //   //   'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.20.1/swagger-ui.min.css',
+  //   // customJs: [
+  //   //   'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.20.1/swagger-ui-bundle.js',
+  //   //   'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.20.1/swagger-ui-standalone-preset.js',
+  //   // ],
+  // });
+
+  // Gunakan swagger-ui-express
+  app.use(
+    '/api-docs',
+    swaggerUi.serve,
+    swaggerUi.setup(document, {
+      swaggerOptions: {
+        defaultModelsExpandDepth: -1,
+      },
+    }),
+  );
 
   await app.listen(process.env.PORT ?? 3000);
 }
