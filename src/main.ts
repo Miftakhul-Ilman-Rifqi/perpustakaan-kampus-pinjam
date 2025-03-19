@@ -30,16 +30,11 @@ import {
 import { ThrottlerExceptionFilter } from './common/throttler/throttler.filter';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { NextFunction, Request, Response } from 'express';
-import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  app.useStaticAssets(join(__dirname, '../../node_modules/swagger-ui-dist'), {
-    prefix: '/api-docs', // Path akses di browser
-    index: false, // Nonaktifkan index.html
-    redirect: false, // Matikan auto-redirect
-  });
+  app.enableCors();
 
   // Redirect root ke /api-docs
   app.use((req: Request, res: Response, next: NextFunction) => {
@@ -108,14 +103,13 @@ async function bootstrap() {
   SwaggerModule.setup('api-docs', app, document, {
     swaggerOptions: {
       defaultModelsExpandDepth: -1, // This will hide the schemas section
-      persistAuthorization: true,
-      customCssUrl:
-        'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.20.1/swagger-ui.min.css',
-      customJsUrl: [
-        'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.20.1/swagger-ui-bundle.min.js',
-        'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.20.1/swagger-ui-standalone-preset.min.js',
-      ],
     },
+    customCssUrl:
+      'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.min.css',
+    customJs: [
+      'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-bundle.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-standalone-preset.js',
+    ],
   });
 
   await app.listen(process.env.PORT ?? 3000);
