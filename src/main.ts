@@ -28,9 +28,12 @@ import {
   //   UpdateLoanRequest,
 } from './model/loan.model';
 import { ThrottlerExceptionFilter } from './common/throttler/throttler.filter';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
+import { NextFunction, Request, Response } from 'express';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // Validasi env variables
   const configService = app.get(ConfigService);
@@ -91,6 +94,19 @@ async function bootstrap() {
     swaggerOptions: {
       defaultModelsExpandDepth: -1, // This will hide the schemas section
     },
+  });
+
+  // Serve static assets untuk Swagger UI
+  app.useStaticAssets(join(__dirname, '../../node_modules/swagger-ui-dist'), {
+    prefix: '/api-docs',
+  });
+
+  // Redirect root ke /api-docs
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    if (req.url === '/') {
+      res.redirect('/api-docs');
+    }
+    next();
   });
 
   await app.listen(process.env.PORT ?? 3000);
